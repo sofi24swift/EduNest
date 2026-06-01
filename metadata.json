@@ -1,0 +1,6 @@
+{
+  "name": "EduNest",
+  "description": "Premium EdTech mobile application UI prototype for discovering silent study spaces, educational curation, and career scholarships.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
