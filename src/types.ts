@@ -69,5 +69,7 @@ export interface UserProfile {
   avatar: string;
   studyGoal: string;
   learningMode: 'Online' | 'Offline' | 'Distant' | 'Hybrid';
+  email?: string;
+  interests?: string[];
 }
 

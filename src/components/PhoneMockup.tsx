@@ -113,7 +113,11 @@ export default function PhoneMockup({
   const [bookedSeats, setBookedSeats] = useState<string[]>([]); // To track booked sockets
 
   // Registration form values
-  const [regName, setRegName] = useState('ნიკა');
+  const [regName, setRegName] = useState('მაია ჩენი');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(['ტექნოლოგიები', 'ხელოვნური ინტელექტი', 'დიზაინი']);
   const [regGoal, setRegGoal] = useState('Tech');
   const [regMode, setRegMode] = useState<'Online' | 'Offline' | 'Distant' | 'Hybrid'>('Online');
   const [regAvatar, setRegAvatar] = useState('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80');
@@ -427,192 +431,186 @@ export default function PhoneMockup({
         <div className="flex-1 overflow-y-auto pb-20 relative bg-[#f8fafc]">
           <AnimatePresence mode="wait">
 
-            {/* 0. GEORGIAN REGISTRATION ONBOARDING SCREEN */}
+            {/* 0. REGISTRATION ONBOARDING SCREEN MATCHING THE UPLOADED PHOTO */}
             {currentScreen === 'registration' && (
               <motion.div
                 key="registration"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
-                className="p-5 space-y-6"
+                className="p-5 space-y-5 bg-[#f4f7fe]/80 min-h-full font-sans text-center"
               >
-                {/* Brand Showcase Logo */}
-                <div className="text-center space-y-2 mt-4 inline-block w-full">
+                {/* Brand Showcase Logo matched to the photo */}
+                <div className="space-y-2 mt-2 w-full select-none">
                   <div className="flex justify-center">
-                    <div className="w-16 h-16 rounded-2xl bg-white p-2 flex items-center justify-center border border-indigo-100/60 shadow-md">
-                      <svg viewBox="0 0 100 100" className="w-12 h-12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {/* Outer Ring - Circular frame of gradient (matching image) */}
-                        <path
-                          d="M 21 62 A 32 32 0 1 1 79 62"
-                          stroke="url(#nestedGradGeo)"
-                          strokeWidth="9.2"
-                          strokeLinecap="round"
-                          fill="none"
+                    {/* Rounded squircle gradient holder matching the image */}
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#06b6d4] via-[#2563eb] to-[#7c3aed] flex items-center justify-center shadow-md animate-pulse">
+                      <svg
+                        viewBox="0 0 64 64"
+                        className="w-[60%] h-[60%]"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        {/* Graduation Cap Diamond Top Plate */}
+                        <path 
+                          d="M 32 15 L 54 24.5 L 32 34 L 10 24.5 Z" 
+                          fill="white" 
                         />
-
-                        {/* Core Element 1: Graduation Mortarboard Cap in Slate-900 / Deep Black */}
-                        <path
-                          d="M 44.5 30 L 44.5 36.5 C 44.5 41, 55.5 41, 55.5 36.5 L 55.5 30 Z"
-                          fill="#0f172a"
+                        {/* Cap Base under Diamond */}
+                        <path 
+                          d="M 21.5 29 L 21.5 37 C 21.5 42, 42.5 42, 42.5 37 L 42.5 29" 
+                          stroke="white" 
+                          strokeWidth="3" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          fill="none" 
                         />
-                        <path
-                          d="M 50 19 L 71 27 L 50 35 L 29 27 Z"
-                          fill="#0f172a"
+                        {/* Tassel String & Tassel Drop */}
+                        <path 
+                          d="M 32 24.5 C 41.5 24.5, 45.5 27, 45.5 32 L 45.5 38" 
+                          stroke="white" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          fill="none" 
                         />
-                        <circle cx="50" cy="27" r="1.5" fill="#0f172a" />
-                        <path
-                          d="M 50 27 C 60 27, 68 28, 68 33 L 68 39"
-                          stroke="#0f172a"
-                          strokeWidth="1.5"
-                          fill="none"
-                          strokeLinecap="round"
-                        />
-                        <rect x="66.5" y="39" width="3" height="1.5" rx="0.5" fill="#0f172a" />
-                        <rect x="66.5" y="41" width="3" height="10" rx="1.5" fill="#0f172a" />
-
-                        {/* Core Element 2: Stylized school desk with tapered splayed legs */}
-                        <rect x="40" y="52" width="20" height="3.5" rx="1" fill="#0f172a" />
-                        <rect x="42.5" y="55.5" width="15" height="2.5" fill="#0f172a" />
-                        <polygon points="43.5,58 46.5,58 45,71 42.5,71" fill="#0f172a" />
-                        <polygon points="53.5,58 56.5,58 57.5,71 55,71" fill="#0f172a" />
-
-                        {/* Core Element 3: Dual layers of beautiful nested book pages wings */}
-                        <path
-                          d="M 50 72 C 38 63, 28 60, 21 62 C 28 69, 38 74, 50 80 Z"
-                          fill="url(#nestedGradGeo)"
-                        />
-                        <path
-                          d="M 50 72 C 62 63, 72 60, 79 62 C 72 69, 62 74, 50 80 Z"
-                          fill="url(#nestedGradGeo)"
-                        />
-
-                        <path
-                          d="M 50 80 C 38 75, 28 71, 22 73 C 29 80, 39 85, 50 89 Z"
-                          fill="url(#nestedGradGeo)"
-                        />
-                        <path
-                          d="M 50 80 C 62 75, 72 71, 78 73 C 71 80, 61 85, 50 89 Z"
-                          fill="url(#nestedGradGeo)"
-                        />
-
-                        {/* Connected Rainbow Gradient */}
-                        <defs>
-                          <linearGradient id="nestedGradGeo" x1="15" y1="20" x2="85" y2="85" gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stopColor="#10b981" /> {/* Luminous Green-Teal */}
-                            <stop offset="30%" stopColor="#06b6d4" /> {/* Electric Cyan */}
-                            <stop offset="55%" stopColor="#2563eb" /> {/* Luminous Royal Blue */}
-                            <stop offset="80%" stopColor="#4f46e5" /> {/* Indigo */}
-                            <stop offset="100%" stopColor="#7c3aed" /> {/* Purple-Violet */}
-                          </linearGradient>
-                        </defs>
+                        <circle cx="45.5" cy="40" r="1.5" fill="white" />
                       </svg>
                     </div>
                   </div>
                   <div>
-                    <h2 className="font-display text-2xl font-black tracking-tight text-slate-900">EduNest</h2>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide mt-0.5">სასწავლო სივრცე და მომავალი</p>
+                    <h2 className="font-display text-xl font-bold tracking-tight text-[#0f172a] mt-2 leading-none">შემოუერთდი EduNest-ს</h2>
+                    <p className="text-[10px] text-slate-500 font-medium mt-1">დაიწყე შენთვის იდეალური სასწავლო სივრცეების აღმოჩენა</p>
                   </div>
                 </div>
 
-                {/* Georgian Onboarding Info Banner */}
-                <div className="rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-teal-500 text-white p-4 shadow-md text-left relative overflow-hidden">
-                  <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-white/5 rounded-full blur-xl" />
-                  <span className="font-mono text-[8px] uppercase tracking-widest text-indigo-100 opacity-90 block">პერსონალიზაცია</span>
-                  <h3 className="font-display text-xs font-bold mt-1 leading-snug">
-                    შექმენი შენი პროფესიული პროფილი
-                  </h3>
-                  <p className="text-[9px] text-indigo-50 opacity-90 leading-relaxed mt-1 font-sans">
-                    შესაბამისი კურიკულუმების, სასტიპენდიო გრანტებისა და მყუდრო სამუშაო სივრცეების მოსარგებად.
-                  </p>
-                </div>
-
-                {/* Onboarding fields in Georgian */}
-                <div className="space-y-4 text-xs font-sans">
+                {/* Registration Card matches image style */}
+                <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm text-left space-y-3.5 pt-4">
                   
-                  {/* Name input */}
-                  <div className="space-y-1.5">
-                    <label className="block text-slate-500 font-bold uppercase tracking-wider text-[8px]">სრული სახელი</label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        value={regName}
-                        onChange={(e) => setRegName(e.target.value)}
-                        placeholder="მაგ: სოფია ჩუტლაშვილი"
-                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-xs shadow-3xs outline-none focus:border-indigo-500 font-semibold text-slate-800"
-                      />
-                    </div>
+                  {/* Full Name field */}
+                  <div className="space-y-1">
+                    <label className="block text-slate-800 font-extrabold text-[8.5px] tracking-wide uppercase">სრული სახელი</label>
+                    <input
+                      type="text"
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      placeholder="მაგ: მაია ჩენი"
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-[10.5px] font-semibold text-slate-800 focus:border-indigo-500 outline-none transition font-sans placeholder-slate-400"
+                    />
                   </div>
 
-                  {/* Objective tracked targets */}
-                  <div className="space-y-1.5">
-                    <label className="block text-slate-500 font-bold uppercase tracking-wider text-[8px]">მიზნობრივი მიმართულება</label>
-                    <div className="grid grid-cols-2 gap-2">
+                  {/* Email field */}
+                  <div className="space-y-1">
+                    <label className="block text-slate-800 font-extrabold text-[8.5px] tracking-wide uppercase">ელ-ფოსტა</label>
+                    <input
+                      type="email"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-[10.5px] font-semibold text-slate-800 focus:border-indigo-500 outline-none transition font-sans placeholder-slate-400"
+                    />
+                  </div>
+
+                  {/* Password field */}
+                  <div className="space-y-1">
+                    <label className="block text-slate-800 font-extrabold text-[8.5px] tracking-wide uppercase">პაროლი</label>
+                    <input
+                      type="password"
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      placeholder="მინიმუმ 8 სიმბოლო"
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-[10.5px] font-semibold text-slate-800 focus:border-indigo-500 outline-none transition font-sans placeholder-slate-400"
+                    />
+                  </div>
+
+                  {/* Confirm Password field */}
+                  <div className="space-y-1">
+                    <label className="block text-slate-800 font-extrabold text-[8.5px] tracking-wide uppercase">დაადასტურეთ პაროლი</label>
+                    <input
+                      type="password"
+                      value={regConfirmPassword}
+                      onChange={(e) => setRegConfirmPassword(e.target.value)}
+                      placeholder="გაიმეორეთ პაროლი"
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-[10.5px] font-semibold text-slate-800 focus:border-indigo-500 outline-none transition font-sans placeholder-slate-400"
+                    />
+                  </div>
+
+                  {/* Select Your Interests capsule grid */}
+                  <div className="space-y-1 pt-1">
+                    <label className="block text-slate-800 font-extrabold text-[8.5px] tracking-wide uppercase">აირჩიეთ თქვენი ინტერესები</label>
+                    <div className="flex flex-wrap gap-1.5 pt-1 max-h-[140px] overflow-y-auto no-scrollbar">
                       {[
-                        { key: 'Tech', label: '💻 პროგრამირება' },
-                        { key: 'Languages', label: '✍️ უცხო ენები' },
-                        { key: 'Business', label: '📈 ბიზნესი & VC' },
-                        { key: 'Exams', label: '🎓 გამოცდები' },
-                      ].map((item) => (
-                        <button
-                          key={item.key}
-                          type="button"
-                          onClick={() => setRegGoal(item.key)}
-                          className={`rounded-xl p-2 md:p-2.5 text-center font-bold tracking-tight text-[11px] border transition-all cursor-pointer ${regGoal === item.key ? 'bg-indigo-50 border-indigo-500 text-indigo-950 font-extrabold shadow-2xs' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
+                        'ფინანსები', 'ტექნოლოგიები', 'ხელოვნური ინტელექტი', 'მედიცინა', 
+                        'ბიზნესი', 'მეწარმეობა', 'საინჟინრო საქმე', 
+                        'დიზაინი', 'მარკეტინგი', 'უცხო ენები', 'მეცნიერება', 
+                        'პოლიტიკა', 'სამართალი'
+                      ].map((interest) => {
+                        const isSelected = selectedInterests.includes(interest);
+                        return (
+                          <button
+                            key={interest}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedInterests(prev => prev.filter(x => x !== interest));
+                              } else {
+                                setSelectedInterests(prev => [...prev, interest]);
+                              }
+                            }}
+                            className={`text-[8.5px] px-3 py-1.5 rounded-full font-bold transition-all border cursor-pointer ${
+                              isSelected
+                                ? 'bg-gradient-to-r from-[#06b6d4] to-[#7c3aed] text-white border-transparent shadow-3xs'
+                                : 'bg-slate-50/70 hover:bg-slate-100 text-slate-600 border-slate-150'
+                            }`}
+                          >
+                            {interest}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Delivery preference select menu */}
-                  <div className="space-y-1.5">
-                    <label className="block text-slate-500 font-bold uppercase tracking-wider text-[8px]">სწავლების სასურველი ფორმატი</label>
-                    <select
-                      value={regMode}
-                      onChange={(e) => setRegMode(e.target.value as any)}
-                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 shadow-3xs outline-none focus:border-indigo-500 font-semibold text-slate-700 cursor-pointer text-[11px]"
-                    >
-                      <option value="Online">🌐 ონლაინ სწავლება (თვითნებური ტემპი)</option>
-                      <option value="Offline">🏫 სივრცეებში დასწრებით (ლოკალურად)</option>
-                      <option value="Distant">📍 დისტანციური/ჰიბრიდული მოდელი</option>
-                      <option value="Hybrid">🤝 კოჰორტული სისტემა (ჯგუფური)</option>
-                    </select>
-                  </div>
-
-                  {/* Avatar Picker row */}
-                  <div className="space-y-1.5">
-                    <label className="block text-slate-500 font-bold uppercase tracking-wider text-[8px]">აირჩიე ავატარი</label>
-                    <div className="flex justify-around py-1">
-                      {AVATARS.map((avatar, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setRegAvatar(avatar.url)}
-                          className={`relative w-10 h-10 rounded-full border-2 overflow-hidden transition-all duration-200 cursor-pointer ${regAvatar === avatar.url ? 'border-indigo-600 scale-110 shadow-md ring-2 ring-indigo-200' : 'border-slate-200 opacity-70 hover:opacity-100'}`}
-                        >
-                          <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Register application trigger */}
+                  {/* Register action button matches photo blue/cyan gradient */}
                   <button
                     type="button"
                     onClick={() => {
                       onRegister({
-                        name: regName.trim() || 'სტუმარი',
+                        name: regName.trim() || 'მაია ჩენი',
                         avatar: regAvatar,
-                        studyGoal: regGoal,
-                        learningMode: regMode,
+                        studyGoal: selectedInterests[0] || 'ტექნოლოგიები',
+                        learningMode: 'Offline',
+                        email: regEmail.trim() || 'your@email.com',
+                        interests: selectedInterests,
                       });
                     }}
-                    className="w-full mt-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 text-xs uppercase tracking-wider shadow-md hover:brightness-110 transition duration-150 cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full mt-3 rounded-xl bg-gradient-to-r from-[#06b6d4] via-[#2563eb] to-[#7c3aed] text-white font-extrabold py-2.5 text-[10.5px] uppercase tracking-wider shadow-sm hover:opacity-95 transition cursor-pointer flex items-center justify-center gap-2"
                   >
-                    🚀 სამუშაო სივრცეში შესვლა
+                    ანგარიშის შექმნა
                   </button>
+
+                  {/* Already have an account text links */}
+                  <div className="pt-2 text-center">
+                    <p className="text-[9.5px] text-slate-400 font-semibold font-sans">
+                      უკვე გაქვთ ანგარიში?{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onRegister({
+                            name: regName.trim() || 'მაია ჩენი',
+                            avatar: regAvatar,
+                            studyGoal: selectedInterests[0] || 'ტექნოლოგიები',
+                            learningMode: 'Offline',
+                            email: regEmail.trim() || 'your@email.com',
+                            interests: selectedInterests,
+                          });
+                        }}
+                        className="text-[#06b6d4] font-extrabold hover:underline cursor-pointer"
+                      >
+                        შესვლა
+                      </button>
+                    </p>
+                  </div>
+
                 </div>
               </motion.div>
             )}
@@ -637,14 +635,9 @@ export default function PhoneMockup({
                     onClick={() => setProfileSheetOpen(true)}
                     className="relative group cursor-pointer"
                   >
-                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-teal-500 to-indigo-600 opacity-60 blur-xs" />
-                    <div className="relative w-11 h-11 rounded-full border-2 border-white overflow-hidden shadow-xs">
-                      <img
-                        src={registeredUser ? registeredUser.avatar : "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80"}
-                        alt="User Profile"
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
+                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#06b6d4] to-[#7c3aed] opacity-60 blur-xs" />
+                    <div className="relative w-11 h-11 rounded-full border-2 border-white overflow-hidden shadow-xs flex items-center justify-center bg-gradient-to-tr from-[#06b6d4] via-[#2563eb] to-[#7c3aed] text-white text-xs font-black">
+                      {registeredUser?.name ? registeredUser.name.charAt(0).toUpperCase() : 'M'}
                     </div>
                   </div>
                 </div>
@@ -2061,29 +2054,47 @@ export default function PhoneMockup({
               <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto" />
               
               <div className="flex items-center gap-3.5 pt-2">
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-indigo-100 shrink-0">
-                  <img src={registeredUser ? registeredUser.avatar : "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80"} alt="" className="w-full h-full object-cover" />
+                <div className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-tr from-[#06b6d4] via-[#2563eb] to-[#7c3aed] text-white text-base font-black shadow-sm shrink-0">
+                  {registeredUser?.name ? registeredUser.name.charAt(0).toUpperCase() : 'M'}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-display text-[13px] font-extrabold text-slate-900 truncate">{registeredUser ? registeredUser.name : 'ნიკა'}</h3>
-                  <span className="text-[9.5px] text-slate-500 font-mono">ID: EN-9521-TB</span>
+                  <h3 className="font-display text-[14px] font-extrabold text-slate-900 truncate">{registeredUser ? registeredUser.name : 'მაია ჩენი'}</h3>
+                  <span className="text-[9.5px] text-slate-500 font-mono block leading-none mt-0.5">{registeredUser?.email || 'your@email.com'}</span>
                 </div>
               </div>
 
               <div className="space-y-3 pt-1 text-xs">
                 
-                {/* Track configurations in Georgian */}
-                <div className="bg-slate-50 rounded-2xl p-3.5 space-y-2 font-sans">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-500">შენი არჩეული გეზი:</span>
-                    <span className="font-extrabold text-slate-850">
-                      {registeredUser ? getStudyGoalLabelGeorgian(registeredUser.studyGoal) : '💻 ტექნოლოგიები'}
+                {/* Modern Track configurations with custom interest tag list */}
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3 text-left">
+                  <div className="flex flex-col gap-1.5 animate-fade-in">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">არჩეული სასწავლო სფეროები</span>
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                      {registeredUser?.interests && registeredUser.interests.length > 0 ? (
+                        registeredUser.interests.map((interest) => (
+                          <span key={interest} className="text-[9px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 transition-transform hover:scale-105">
+                            {interest}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[9px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-[#2563eb] border border-[#2563eb]/20">
+                          {registeredUser ? registeredUser.studyGoal : 'ტექნოლოგიები'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-150 pt-2.5 flex justify-between items-center text-[11px]">
+                    <span className="text-slate-500 font-medium">პლატფორმის რეჟიმი:</span>
+                    <span className="font-extrabold text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                      აქტიური წევრი
                     </span>
                   </div>
-                  <div className="flex justify-between border-t border-slate-100 pt-2 text-[11px]">
-                    <span className="text-slate-500">სწავლის ფორმატი:</span>
-                    <span className="font-extrabold text-slate-850">
-                      {registeredUser ? getLearningModeLabelGeorgian(registeredUser.learningMode) : '🌐 ონლაინ'}
+
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-slate-500 font-medium">ანგარიშის ID:</span>
+                    <span className="font-mono text-slate-600 font-bold bg-slate-100 px-1.5 py-0.5 rounded text-[9px]">
+                      EN-2026-CH
                     </span>
                   </div>
                 </div>
@@ -2096,7 +2107,7 @@ export default function PhoneMockup({
                   }}
                   className="w-full py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-[11px]"
                 >
-                  პროფილის გადატვირთვა 🔄
+                  პროფილის გადატვირთვა / გამოსვლა 🔄
                 </button>
 
                 <button
