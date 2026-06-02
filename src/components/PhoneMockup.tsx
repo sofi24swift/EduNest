@@ -105,6 +105,13 @@ export default function PhoneMockup({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedMapPinId, setSelectedMapPinId] = useState<string | null>(null);
 
+  // New Interactive Map State Variables
+  const [mapFilter, setMapFilter] = useState<'all' | 'coworking' | 'cafe' | 'library' | 'quiet'>('all');
+  const [selectedLandmark, setSelectedLandmark] = useState<string | null>(null);
+  const [activeMapTab, setActiveMapTab] = useState<'basic' | 'outlets' | 'sensory'>('basic');
+  const [liveDecibels, setLiveDecibels] = useState(25);
+  const [bookedSeats, setBookedSeats] = useState<string[]>([]); // To track booked sockets
+
   // Registration form values
   const [regName, setRegName] = useState('ნიკა');
   const [regGoal, setRegGoal] = useState('Tech');
@@ -220,6 +227,27 @@ export default function PhoneMockup({
       };
     });
   }, [placesWithSensoryOverride, userCoords]);
+
+  // Simulated live decibels fluctuation
+  useEffect(() => {
+    let interval: any = null;
+    if (currentScreen === 'map' && selectedMapPinId) {
+      const pin = processedPlacesList.find(p => p.id === selectedMapPinId);
+      if (pin) {
+        setLiveDecibels(pin.noiseLevel);
+        interval = setInterval(() => {
+          setLiveDecibels(prev => {
+            const fluctuation = Math.floor(Math.random() * 5) - 2; // -2 to +2
+            const newVal = prev + fluctuation;
+            return Math.max(12, Math.min(85, newVal));
+          });
+        }, 1500);
+      }
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [currentScreen, selectedMapPinId, processedPlacesList]);
 
   // Filtered Places for Discovery Screen
   const filteredPlaces = useMemo(() => {
@@ -870,28 +898,54 @@ export default function PhoneMockup({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col h-full"
+                className="flex flex-col h-full bg-slate-50"
               >
                 {/* Georgian Map View Header Overlay */}
-                <div className="p-4 bg-white border-b border-slate-100 shrink-0">
+                <div className="p-4 bg-white border-b border-slate-100 shrink-0 shadow-3xs">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h2 className="font-display text-md font-black text-slate-900 leading-none">ცოცხალი GPS რუკა</h2>
-                      <p className="text-[9.5px] text-slate-400 font-medium mt-1">უახლოესი სასწავლო სივრცეები თბილისში</p>
+                      <h2 className="font-display text-md font-black text-slate-900 leading-none">ცოცხალი საორიენტაციო რუკა</h2>
+                      <p className="text-[9.5px] text-slate-400 font-medium mt-1">ინტერაქტიული GPS ნავიგაცია და სენსორები</p>
                     </div>
                     
                     <button
                       onClick={handleRequestLiveGPS}
                       disabled={gpsLoading}
-                      className="p-1 px-2 text-[9px] rounded-lg border font-bold flex items-center gap-1 cursor-pointer bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      className="p-1 px-2.5 text-[9px] rounded-lg border border-slate-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-50 text-slate-700 hover:bg-slate-100 transition shadow-3xs"
                     >
                       {gpsLoading ? (
-                        <RefreshCw className="w-3 h-3 animate-spin" />
+                        <RefreshCw className="w-3 h-3 animate-spin text-teal-600" />
                       ) : (
-                        <Navigation className="w-3 h-3 text-indigo-600" />
+                        <Navigation className="w-3 h-3 text-teal-600 animate-pulse" />
                       )}
-                      GPS
+                      GPS-ლოკატორი
                     </button>
+                  </div>
+
+                  {/* Enhanced Horizontal Map Filter Category Chips */}
+                  <div className="flex gap-1.5 mt-3 overflow-x-auto no-scrollbar pb-1 select-none">
+                    {[
+                      { id: 'all', label: '🌐 ყველა სივრცე' },
+                      { id: 'coworking', label: '💼 მხოლოდ ქოვორქინგი' },
+                      { id: 'cafe', label: '☕ კაფეები' },
+                      { id: 'library', label: '🏛️ ბიბლიოთეკა' },
+                      { id: 'quiet', label: '🤫 ძალიან ჩუმი (≤30 dB)' }
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setMapFilter(item.id as any);
+                          setSelectedLandmark(null);
+                        }}
+                        className={`text-[8.5px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition border ${
+                          mapFilter === item.id
+                            ? 'bg-teal-600 text-white border-teal-600 shadow-2xs'
+                            : 'bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
                   </div>
 
                   {/* GPS Success or Error Indicator banner */}
@@ -904,19 +958,41 @@ export default function PhoneMockup({
                 </div>
 
                 {/* SVG Vector Interactive Map Display Container */}
-                <div className="relative bg-[#0f172a] h-[340px] select-none overflow-hidden border-b border-slate-200">
+                <div className="relative bg-[#080d1a] h-[340px] select-none overflow-hidden border-b border-slate-200">
                   
+                  {/* Floating Action Overlay for Active Landmark Info */}
+                  {selectedLandmark && (
+                    <div className="absolute top-2.5 left-2.5 right-14 z-40 bg-slate-900/95 border border-slate-800 text-white p-2 rounded-xl text-[9px] shadow-lg animate-fadeIn flex items-start gap-2 backdrop-blur-xs">
+                      <span className="text-sm shrink-0">📍</span>
+                      <div className="min-w-0 flex-1">
+                        <h5 className="font-extrabold text-[#00e5ff] truncate leading-tight">
+                          {selectedLandmark === 'lnd-1' ? 'მთაწმინდის ანძა 🗼' : selectedLandmark === 'lnd-2' ? 'მშვიდობის ხიდი 🌉' : 'ეროვნული ბიბლიოთეკა 🏛️'}
+                        </h5>
+                        <p className="text-slate-300 text-[8.5px] mt-0.5 leading-normal">
+                          {selectedLandmark === 'lnd-1'
+                            ? 'Tbilisi TV Tower — მშვენიერი ხედი და მშვიდი აურა მთაწმინდაზე 🌲'
+                            : selectedLandmark === 'lnd-2'
+                            ? 'Bridge of Peace — დააკავშირებს ძველ თბილისს რიყის პარკთან 🌊'
+                            : 'National Library — იდეალური აკადემიური სივრცე და კვლევის ცენტრი 📚'}
+                        </p>
+                      </div>
+                      <button onClick={() => setSelectedLandmark(null)} className="text-slate-400 hover:text-white shrink-0 p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
                   {/* Zoom Controls inside layout */}
                   <div className="absolute top-3 right-3 z-30 flex flex-col gap-1.5">
                     <button
                       onClick={() => setZoomLevel(prev => Math.min(2.5, prev + 0.25))}
-                      className="bg-white/90 text-slate-800 border p-1.5 rounded-lg hover:bg-white shadow-md flex items-center justify-center shrink-0 cursor-pointer"
+                      className="bg-slate-900/80 hover:bg-slate-900 text-white border border-slate-800 p-1.5 rounded-lg shadow-md flex items-center justify-center shrink-0 cursor-pointer transition select-none"
                     >
                       <ZoomIn className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => setZoomLevel(prev => Math.max(0.75, prev - 0.25))}
-                      className="bg-white/90 text-slate-800 border p-1.5 rounded-lg hover:bg-white shadow-md flex items-center justify-center shrink-0 cursor-pointer"
+                      className="bg-slate-900/80 hover:bg-slate-900 text-white border border-slate-800 p-1.5 rounded-lg shadow-md flex items-center justify-center shrink-0 cursor-pointer transition select-none"
                     >
                       <ZoomOut className="w-3.5 h-3.5" />
                     </button>
@@ -925,8 +1001,9 @@ export default function PhoneMockup({
                         setZoomLevel(1.0);
                         setPanOffset({ x: 0, y: 0 });
                         setSelectedMapPinId(null);
+                        setSelectedLandmark(null);
                       }}
-                      className="bg-white/90 text-slate-800 border p-1.5 rounded-lg hover:bg-white shadow-md flex items-center justify-center shrink-0 cursor-pointer text-[8px] font-bold"
+                      className="bg-slate-900/80 hover:bg-slate-900 text-[#00e5ff] border border-slate-800 p-1 rounded-lg shadow-md flex items-center justify-center shrink-0 cursor-pointer text-[8px] font-bold transition select-none"
                     >
                       რესეტი
                     </button>
@@ -936,21 +1013,20 @@ export default function PhoneMockup({
                   <div className="absolute bottom-3 right-3 z-30">
                     <button
                       onClick={() => {
-                        // Focus on Geolab center or user coordinates
                         setPanOffset({ x: 0, y: 0 });
-                        setZoomLevel(1.25);
+                        setZoomLevel(1.3);
                       }}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-xl shadow-lg flex items-center gap-1 text-[9.5px] font-bold cursor-pointer"
+                      className="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-xl shadow-lg flex items-center gap-1 text-[9px] font-bold cursor-pointer transition"
                     >
-                      <Navigation className="w-3.5 h-3.5 animate-bounce" />
-                      ცენტრში ფოკუსი
+                      <Navigation className="w-3 h-3 animate-bounce" />
+                      როუტი Geolab-ზე
                     </button>
                   </div>
 
-                  {/* SVG Map Canvas Viewport */}
+                  {/* SVG Map Canvas Viewport with Panning support */}
                   <svg
                     viewBox="0 0 360 480"
-                    className="w-full h-[380px] cursor-grab active:cursor-grabbing text-slate-350"
+                    className="w-full h-[380px] cursor-grab active:cursor-grabbing"
                     onMouseDown={handleMapMouseDown}
                     onMouseMove={handleMapMouseMove}
                     onMouseUp={handleMapMouseUpOrLeave}
@@ -960,175 +1036,428 @@ export default function PhoneMockup({
                     <g transform={`translate(${panOffset.x}, ${panOffset.y}) scale(${zoomLevel})`}>
                       
                       {/* Grid overlay mesh for futuristic tech map vibe */}
-                      <pattern id="cityGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#334155" strokeWidth="0.5" opacity="0.3" />
+                      <pattern id="premiumCityGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                        <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#101827" strokeWidth="0.8" />
+                        <circle cx="0" cy="0" r="0.8" fill="#1e293b" />
                       </pattern>
-                      <rect width="1000" height="1000" x="-300" y="-300" fill="url(#cityGrid)" />
+                      <rect width="1200" height="1200" x="-400" y="-400" fill="url(#premiumCityGrid)" />
 
-                      {/* TBILISI MTKVARI RIVER (Cyber Blue neon sweep) */}
+                      {/* Concentric Search Radar Circles Overlay from Geolab */}
+                      <circle cx="271" cy="196" r="45" fill="none" stroke="#2563eb" strokeWidth="0.5" strokeDasharray="2 4" opacity="0.3" />
+                      <circle cx="271" cy="196" r="95" fill="none" stroke="#2563eb" strokeWidth="0.5" strokeDasharray="3 5" opacity="0.15" />
+                      <circle cx="271" cy="196" r="160" fill="none" stroke="#2563eb" strokeWidth="0.5" strokeDasharray="4 6" opacity="0.1" />
+
+                      {/* GEORGIAN LANDSCAPE: VAKE PARK (Emerald Zone) */}
                       <path
-                        d="M -100 380 Q 120 280, 220 300 T 500 160"
-                        stroke="#0ea5e9"
-                        strokeWidth="12"
-                        fill="none"
-                        opacity="0.3"
-                        strokeLinecap="round"
+                        d="M -20 180 L 110 210 L 125 320 L -20 280 Z"
+                        fill="#10b981"
+                        fillOpacity="0.12"
+                        stroke="#10b981"
+                        strokeWidth="0.8"
+                        strokeDasharray="3 2"
+                        opacity="0.7"
                       />
-                      <text x="210" y="275" fill="#38bdf8" fontSize="8" fontWeight="bold" opacity="0.5" transform="rotate(5 210 275)">
-                        მტკვარი • Mtkvari River
+                      <text x="35" y="245" fill="#10b981" fontSize="6.5" fontWeight="bold" opacity="0.6">
+                        ვაკის პარკი • Vake Park 🌳
                       </text>
 
-                      {/* MAJOR TBILISI AVENUE STREETS */}
-                      {/* Shota Rustaveli Avenue */}
-                      <line x1="80" y1="410" x2="280" y2="290" stroke="#475569" strokeWidth="4" opacity="0.4" strokeLinecap="round" />
-                      <text x="120" y="340" fill="#94a3b8" fontSize="6.5" fontWeight="bold" opacity="0.5" transform="rotate(-30 120 340)">
-                        შოთა რუსთაველის გამზირი (Rustaveli Ave)
+                      {/* GEORGIAN LANDSCAPE: MTATSMINDA FOREST & FUNICULAR */}
+                      <path
+                        d="M 60 330 Q 140 370, 95 440 T -10 390 Z"
+                        fill="#059669"
+                        fillOpacity="0.11"
+                        stroke="#059669"
+                        strokeWidth="0.6"
+                        opacity="0.6"
+                      />
+                      <text x="50" y="380" fill="#059669" fontSize="6.5" fontWeight="bold" opacity="0.5" transform="rotate(-15 50 380)">
+                        მთაწმინდის ტყე-პარკი
+                      </text>
+
+                      {/* GEORGIAN LANDSCAPE: RIKE PARK (Teal Grass) */}
+                      <path
+                        d="M 285 270 Q 300 250, 315 285 T 295 330 T 270 295 Z"
+                        fill="#0d9488"
+                        fillOpacity="0.15"
+                        stroke="#0d9488"
+                        strokeWidth="0.7"
+                        opacity="0.8"
+                      />
+                      <text x="290" y="295" fill="#2dd4bf" fontSize="5.5" fontWeight="bold" opacity="0.7">
+                        რიყის პარკი
+                      </text>
+
+                      {/* GEORGIAN WATER LAYERS: LISI LAKE (Luminous Indigo Oval) */}
+                      <ellipse cx="65" cy="70" rx="35" ry="16" fill="#00e5ff" fillOpacity="0.18" stroke="#00e5ff" strokeWidth="1" strokeDasharray="4 2" />
+                      <text x="65" y="72" fill="#00e5ff" fontSize="5.5" fontWeight="black" textAnchor="middle" opacity="0.65">
+                        ლისის ტბა • Lisi Lake 💧
+                      </text>
+
+                      {/* TBILISI MTKVARI RIVER (Cyber Blue neon glow sweep) */}
+                      {/* Thicker River Underglow */}
+                      <path
+                        d="M -150 420 Q 130 300, 240 320 T 520 180"
+                        stroke="#0284c7"
+                        strokeWidth="15"
+                        fill="none"
+                        opacity="0.15"
+                        strokeLinecap="round"
+                      />
+                      {/* River main flow */}
+                      <path
+                        d="M -150 420 Q 130 300, 240 320 T 520 180"
+                        stroke="#0ea5e9"
+                        strokeWidth="6"
+                        fill="none"
+                        opacity="0.6"
+                        strokeLinecap="round"
+                      />
+                      <text x="220" y="295" fill="#38bdf8" fontSize="7" fontWeight="bold" opacity="0.6" transform="rotate(7 220 295)">
+                        მდ. მტკვარი • Mtkvari River 🌊
+                      </text>
+
+                      {/* MAJOR ROAD NETWORK (Double neon white/slate outlines) */}
+                      {/* Melikishvili & Rustaveli Avenue */}
+                      <path d="M 70 340 L 271 210 L 330 190" stroke="#1e293b" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
+                      <path d="M 70 340 L 271 210 L 330 190" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+                      <text x="145" y="270" fill="#94a3b8" fontSize="6" fontWeight="bold" opacity="0.5" transform="rotate(-33 145 270)">
+                        რუსთაველის გამზირი (Rustaveli Ave)
                       </text>
 
                       {/* Merab Kostava Street */}
-                      <line x1="280" y1="290" x2="340" y2="100" stroke="#475569" strokeWidth="3.5" opacity="0.4" strokeLinecap="round" />
-                      <text x="270" y="210" fill="#94a3b8" fontSize="6.5" fontWeight="bold" opacity="0.5" transform="rotate(-70 270 210)">
-                        მერაბ კოსტავას ქუჩა (Kostava St)
+                      <path d="M 271 210 L 290 120 L 360 80" stroke="#1e293b" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
+                      <path d="M 271 210 L 290 120 L 360 80" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+                      <text x="310" y="140" fill="#94a3b8" fontSize="6" fontWeight="bold" opacity="0.5" transform="rotate(-74 310 140)">
+                        კოზმავას ქ. (Kostava St)
                       </text>
 
                       {/* Chavchavadze Avenue */}
-                      <line x1="10" y1="380" x2="160" y2="460" stroke="#475569" strokeWidth="3.5" opacity="0.4" strokeLinecap="round" />
-                      <text x="40" y="415" fill="#94a3b8" fontSize="6.5" fontWeight="bold" opacity="0.5" transform="rotate(30 40 415)">
-                        ი. ჭავჭავაძის გამზირი (Chavchavadze)
+                      <path d="M -50 250 L 70 340" stroke="#1e293b" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
+                      <path d="M -50 250 L 70 340" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+                      <text x="5" y="295" fill="#94a3b8" fontSize="6" fontWeight="bold" opacity="0.5" transform="rotate(37 5 295)">
+                        ჭავჭავაძის გამზ.
                       </text>
 
-                      {/* DISTRICT URBAN RECT PILLS LABEL */}
-                      <text x="35" y="110" fill="#64748b" fontSize="8" fontWeight="extrabold" opacity="0.4">
-                        ვაკე-საბურთალო
+                      {/* Pekini Avenue */}
+                      <path d="M 120 180 L 250 110 L 290 120" stroke="#101827" strokeWidth="5.5" strokeLinecap="round" />
+                      <path d="M 120 180 L 250 110 L 290 120" stroke="#334155" strokeWidth="2" strokeLinecap="round" />
+                      <text x="180" y="140" fill="#64748b" fontSize="5.5" opacity="0.5" transform="rotate(-28 180 140)">
+                        პეკინის გამზ. (Pekini St)
                       </text>
-                      <text x="220" y="460" fill="#64748b" fontSize="8" fontWeight="extrabold" opacity="0.4">
+
+                      {/* DISTRICT LABELS */}
+                      <rect x="235" y="60" width="60" height="12" rx="3" fill="#0f172a" stroke="#1e293b" strokeWidth="0.5" opacity="0.5" />
+                      <text x="265" y="68" fill="#64748b" fontSize="5.5" fontWeight="black" textAnchor="middle" letterSpacing="0.5" opacity="0.6">
+                        საბურთალო
+                      </text>
+
+                      <rect x="290" y="440" width="60" height="12" rx="3" fill="#0f172a" stroke="#1e293b" strokeWidth="0.5" opacity="0.5" />
+                      <text x="320" y="448" fill="#64748b" fontSize="5.5" fontWeight="black" textAnchor="middle" letterSpacing="0.5" opacity="0.6">
                         ძველი თბილისი
                       </text>
 
-                      {/* PATH LINES: Connect my location (Pulsing blue dot) to SELECTED PIN or nearest place */}
+                      {/* INTERACTIVE CLICKABLE CITY LANDMARKS */}
+                      {[
+                        { id: 'lnd-1', x: 75, y: 395, name: 'Tbilisi TV Tower', color: '#00e5ff' },
+                        { id: 'lnd-2', x: 300, y: 285, name: 'Bridge of Peace', color: '#38bdf8' },
+                        { id: 'lnd-3', x: 230, y: 195, name: 'National Library', color: '#fb923c' }
+                      ].map((landmark) => (
+                        <g
+                          key={landmark.id}
+                          transform={`translate(${landmark.x}, ${landmark.y})`}
+                          className="cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedLandmark(landmark.id);
+                          }}
+                        >
+                          <circle cx="0" cy="0" r="7" fill={landmark.color} fillOpacity="0.2" className="animate-pulse" />
+                          <circle cx="0" cy="0" r="3.5" fill={landmark.color} stroke="#ffffff" strokeWidth="0.8" />
+                          <circle cx="0" cy="0" r="1.5" fill="#020617" />
+                        </g>
+                      ))}
+
+                      {/* SOPHISTICATED NEON GPS walking route overlay (only if Study Space pin is selected) */}
                       {activePinPlace && activePinPlace.lat && activePinPlace.lng && (
                         <g>
                           {(() => {
                             const destProj = getProjectedCoordinates(activePinPlace.lat, activePinPlace.lng);
+                            
+                            // Multi-segment street mimicking path
+                            const midX = myLocationProjCoords.x;
+                            const midY = destProj.y;
+                            const pathStr = `M ${myLocationProjCoords.x} ${myLocationProjCoords.y} L ${midX} ${midY} L ${destProj.x} ${destProj.y}`;
+                            
                             return (
                               <>
-                                <line
-                                  x1={myLocationProjCoords.x}
-                                  y1={myLocationProjCoords.y}
-                                  x2={destProj.x}
-                                  y2={destProj.y}
-                                  stroke="#818cf8"
-                                  strokeWidth="1.5"
+                                {/* Glowing highway underglow */}
+                                <path
+                                  d={pathStr}
+                                  fill="none"
+                                  stroke="#10b981"
+                                  strokeWidth="5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  opacity="0.25"
+                                />
+                                {/* Main animated route dashed line */}
+                                <path
+                                  d={pathStr}
+                                  fill="none"
+                                  stroke="#10b981"
+                                  strokeWidth="2.2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
                                   strokeDasharray="4 3"
                                   className="animate-pulse"
                                 />
-                                <circle cx={destProj.x} cy={destProj.y} r="18" fill="none" stroke="#818cf8" strokeWidth="0.5" opacity="0.5" />
+                                {/* Soft sonar target ring */}
+                                <circle cx={destProj.x} cy={destProj.y} r="22" fill="none" stroke="#10b981" strokeWidth="0.8" strokeDasharray="2 3" opacity="0.5" />
                               </>
                             );
                           })()}
                         </g>
                       )}
 
-                      {/* MY LOCATION: Static / GPS Blue Pulsing locator ring */}
+                      {/* MY USER LOCATION: Gps Pulse Circle */}
                       <g transform={`translate(${myLocationProjCoords.x}, ${myLocationProjCoords.y})`}>
-                        {/* Pulsing outer rings */}
-                        <circle cx="0" cy="0" r="10" fill="#2563eb" opacity="0.25" className="animate-ping" style={{ transformOrigin: 'center' }} />
-                        <circle cx="0" cy="0" r="5" fill="#2563eb" opacity="0.4" className="animate-pulse" />
-                        <circle cx="0" cy="0" r="4.5" fill="#f8fafc" stroke="#2563eb" strokeWidth="2.5" />
-                        <text x="7" y="3" fill="#2563eb" fontSize="6.5" fontWeight="extrabold" className="font-sans">
-                          მე (Geolab)
+                        <circle cx="0" cy="0" r="12" fill="#3b82f6" opacity="0.3" className="animate-ping" style={{ transformOrigin: 'center' }} />
+                        <circle cx="0" cy="0" r="6.5" fill="#1d4ed8" opacity="0.4" />
+                        <circle cx="0" cy="0" r="4.2" fill="#ffffff" stroke="#2563eb" strokeWidth="2.2" />
+                        <text x="8" y="2.5" fill="#38bdf8" fontSize="6" fontWeight="extrabold" className="font-sans">
+                          მე (Geolab) 📍
                         </text>
                       </g>
 
-                      {/* PLACES COMPOSITE PIN MARKERS */}
-                      {processedPlacesList.map((place) => {
-                        if (!place.lat || !place.lng) return null;
-                        const proj = getProjectedCoordinates(place.lat, place.lng);
-                        const isSelected = selectedMapPinId === place.id;
-                        
-                        return (
-                          <g
-                            key={place.id}
-                            transform={`translate(${proj.x}, ${proj.y})`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedMapPinId(place.id);
-                            }}
-                            className="cursor-pointer group"
-                          >
-                            {/* Pin icon shadow effect */}
-                            <ellipse cx="0" cy="5" rx="5" ry="1.5" fill="#020617" opacity="0.5" />
-                            
-                            {/* Marker bubble pointer */}
-                            <path
-                              d="M 0 -10 C -6 -10 -9 -7 -9 0 C -9 7 0 14 0 14 C 0 14 9 7 9 0 C 9 -7 6 -10 0 -10 Z"
-                              fill={isSelected ? '#c026d3' : place.type === 'coworking' ? '#4f46e5' : place.type === 'cafe' ? '#0ea5e9' : '#0d9488'}
-                              stroke="#ffffff"
-                              strokeWidth="1.5"
-                            />
+                      {/* STUDY PLACES INTERACTIVE PIN MARKERS */}
+                      {processedPlacesList
+                        .filter(p => {
+                          if (mapFilter === 'all') return true;
+                          if (mapFilter === 'quiet') return p.noiseLevel <= 30;
+                          return p.type === mapFilter;
+                        })
+                        .map((place) => {
+                          if (!place.lat || !place.lng) return null;
+                          const proj = getProjectedCoordinates(place.lat, place.lng);
+                          const isSelected = selectedMapPinId === place.id;
+                          
+                          // Type matches colors
+                          const pinColor = isSelected 
+                            ? '#a855f7' // Neon purple for selection
+                            : place.type === 'coworking' 
+                            ? '#3b82f6' // Blue for co-work
+                            : place.type === 'cafe' 
+                            ? '#22c55e' // Jade Green for cafes
+                            : '#eab308'; // Amber for library
+                          
+                          return (
+                            <g
+                              key={place.id}
+                              transform={`translate(${proj.x}, ${proj.y})`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMapPinId(place.id);
+                                setSelectedLandmark(null);
+                              }}
+                              className="cursor-pointer group transition duration-300"
+                            >
+                              {/* Glowing background ring */}
+                              <circle cx="0" cy="-2.5" r="10" fill={pinColor} opacity={isSelected ? 0.35 : 0.08} className={isSelected ? 'animate-ping' : 'group-hover:scale-125 duration-300'} />
+                              
+                              {/* Pin shadow ellipse */}
+                              <ellipse cx="0" cy="6" rx="4.2" ry="1.2" fill="#000000" opacity="0.45" />
 
-                            {/* Center white rating inside pin */}
-                            <circle cx="0" cy="-1.5" r="3.5" fill="#ffffff" />
-                            <circle cx="0" cy="-1.5" r="1.5" fill={isSelected ? '#c026d3' : '#1e293b'} />
+                              {/* Droplet pin map pointer path */}
+                              <path
+                                d="M 0 -13 C -6 -13 -9.5 -9.5 -9.5 -2.5 C -9.5 4 0 11 0 11 C 0 11 9.5 4 9.5 -2.5 C 9.5 -9.5 6 -13 0 -13 Z"
+                                fill={pinColor}
+                                stroke="#ffffff"
+                                strokeWidth="1.2"
+                              />
 
-                            {/* Label of cafe hovering above pin */}
-                            <g transform="translate(0, -14)">
-                              <rect x="-35" y="-12" width="70" height="11" rx="2" fill="#1e293b" opacity="0.9" />
-                              <text x="0" y="-4" fill="#ffffff" fontSize="5.5" fontWeight="black" textAnchor="middle" className="truncate">
-                                {place.name.split('•')[0].trim()}
-                              </text>
+                              {/* Center icon / point */}
+                              <circle cx="0" cy="-2.5" r="3.2" fill="#ffffff" />
+                              <circle cx="0" cy="-2.5" r="1.5" fill={isSelected ? '#101827' : pinColor} />
+
+                              {/* Dynamic floating miniature title badge */}
+                              <g transform="translate(0, -18)">
+                                <rect x="-32" y="-9" width="64" height="9" rx="2" fill="#0f172a" stroke="#1e293b" strokeWidth="0.5" opacity="0.85" />
+                                <text x="0" y="-2.5" fill="#f8fafc" fontSize="4.8" fontWeight="bold" textAnchor="middle">
+                                  {place.name.split('•')[0].trim().substring(0, 11)}...
+                                </text>
+                              </g>
                             </g>
-                          </g>
-                        );
+                          );
                       })}
 
                     </g>
                   </svg>
                 </div>
 
-                {/* Pin focus Details drawer overlay */}
-                <div className="p-4 bg-white space-y-3 flex-1 min-h-[140px] flex flex-col justify-between shrink-0">
+                {/* ADVANCED MULTI-TAB BOTTOM DRAWER DETAILS OVERLAY */}
+                <div className="bg-white border-t border-slate-100 flex-1 min-h-[170px] shrink-0 shadow-lg flex flex-col font-sans">
                   {activePinPlace ? (
-                    <div className="space-y-2 animate-fadeIn flex flex-col justify-between h-full">
-                      <div className="flex gap-2.5 items-start">
-                        <div className="w-11 h-11 rounded-lg overflow-hidden bg-slate-200 shrink-0">
-                          <img src={activePinPlace.image} className="w-full h-full object-cover" referrerPolicy="no-referrer" alt="" />
-                        </div>
-                        <div className="min-w-0 flex-1 space-y-0.5">
-                          <h4 className="font-display text-xs font-extrabold text-slate-900 truncate">{activePinPlace.name}</h4>
-                          <p className="text-[9px] text-slate-500 truncate font-sans">{activePinPlace.address}</p>
-                          <div className="flex items-center gap-2 text-[9px] font-bold">
-                            <span className="text-amber-500 flex items-center gap-0.5">
-                              <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                              {activePinPlace.rating} ({activePinPlace.reviewsCount})
-                            </span>
-                            <span className="text-indigo-600 font-mono">⚡ {activePinPlace.distance} ჩემგან</span>
-                          </div>
+                    <div className="flex flex-col h-full">
+                      {/* Subcompact Bottom Sheet Drawer Header */}
+                      <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 flex justify-between items-center text-xs shrink-0 select-none">
+                        <div className="flex gap-1.5 items-center">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <h4 className="font-extrabold text-slate-800 text-[10.5px]">სივრცის ცოცხალი მახასიათებლები</h4>
                         </div>
                         <button
                           onClick={() => setSelectedMapPinId(null)}
-                          className="p-1 rounded-full text-slate-400 hover:bg-slate-50"
+                          className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
-                      <div className="flex gap-2 mt-1">
-                        <button
-                          onClick={() => onScreenChange('place-detail', activePinPlace.id)}
-                          className="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase cursor-pointer text-center"
-                        >
-                          დეტალების ნახვა 🔎
-                        </button>
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${activePinPlace.lat},${activePinPlace.lng}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="py-1.5 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold text-[10px] flex items-center justify-center gap-1"
-                        >
-                          <Share2 className="w-3.5 h-3.5" />
-                          ნავიგაცია
-                        </a>
+                      {/* Horizontal tab selector for Bottom Sheet */}
+                      <div className="flex border-b border-slate-100 shrink-0 select-none bg-slate-50/50">
+                        {[
+                          { id: 'basic', label: '📝 დეტალები', icon: 'info' },
+                          { id: 'outlets', label: '🪑 მაგიდები', icon: 'grid' },
+                          { id: 'sensory', label: '📡 სენსორები', icon: 'activity' }
+                        ].map((tab) => (
+                          <button
+                            key={tab.id}
+                            onClick={() => setActiveMapTab(tab.id as any)}
+                            className={`flex-1 py-1.5 text-[9px] font-black uppercase text-center border-b-2 transition ${
+                              activeMapTab === tab.id
+                                ? 'border-teal-600 text-teal-700 font-extrabold bg-white'
+                                : 'border-transparent text-slate-450 hover:text-slate-700'
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Content panel for selected map tab */}
+                      <div className="p-3.5 flex-1 overflow-y-auto max-h-[110px] min-h-[90px] select-none">
+                        
+                        {/* TAB A: BASIC INFORMATION DETAILS */}
+                        {activeMapTab === 'basic' && (
+                          <div className="space-y-2 animate-fadeIn">
+                            <div className="flex gap-2.5 items-start">
+                              <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 shrink-0 shadow-3xs border border-slate-100">
+                                <img src={activePinPlace.image} className="w-full h-full object-cover" referrerPolicy="no-referrer" alt="" />
+                              </div>
+                              <div className="min-w-0 flex-1 space-y-0.5">
+                                <h4 className="font-display text-[11px] font-extrabold text-slate-900 truncate">{activePinPlace.name}</h4>
+                                <p className="text-[9px] text-slate-500 truncate">{activePinPlace.address}</p>
+                                <div className="flex items-center gap-2 text-[9px] font-bold">
+                                  <span className="text-amber-500 flex items-center gap-0.5">
+                                    <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                                    {activePinPlace.rating} ({activePinPlace.reviewsCount})
+                                  </span>
+                                  <span className="text-teal-600 font-mono">🚶 {activePinPlace.distance} • 5 წთ ფეხით</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-1.5 pt-1.5 border-t border-slate-50 select-none">
+                              <button
+                                onClick={() => onScreenChange('place-detail', activePinPlace.id)}
+                                className="flex-1 py-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-black text-[9px] cursor-pointer text-center transition shadow-3xs"
+                              >
+                                სივრცის სრული გვერდი 🔎
+                              </button>
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${activePinPlace.lat},${activePinPlace.lng}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="py-1 px-3.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold text-[9px] flex items-center justify-center gap-1 transition shadow-3xs"
+                              >
+                                <Share2 className="w-3 h-3" />
+                                ნავიგაცია
+                              </a>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* TAB B: OUTLETS / DESK SCHEME BOOKING */}
+                        {activeMapTab === 'outlets' && (
+                          <div className="space-y-2 animate-fadeIn">
+                            <div className="flex justify-between items-center text-[8.5px] text-slate-500 border-b border-blue-50/50 pb-1">
+                              <span>🪑 მაგიდის/როზეტის შერჩევა:</span>
+                              <span className="font-semibold text-teal-600">სწრაფი დაჯავშნა უფასოდ</span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-1.5 select-none text-[8px]">
+                              {[
+                                { id: 'A1', type: 'usb', noise: 'Silent' },
+                                { id: 'A2', type: 'plug', noise: 'Silent' },
+                                { id: 'B1', type: 'plug', noise: 'Moderate' },
+                                { id: 'B2', type: 'usbc', noise: 'Moderate' }
+                              ].map((seat) => {
+                                const isBooked = bookedSeats.includes(`${activePinPlace.id}-${seat.id}`);
+                                return (
+                                  <div
+                                    key={seat.id}
+                                    onClick={() => {
+                                      if (isBooked) {
+                                        setBookedSeats(prev => prev.filter(x => x !== `${activePinPlace.id}-${seat.id}`));
+                                      } else {
+                                        setBookedSeats(prev => [...prev, `${activePinPlace.id}-${seat.id}`]);
+                                      }
+                                    }}
+                                    className={`p-1.5 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition ${
+                                      isBooked
+                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold'
+                                        : 'bg-slate-50/60 border-slate-200 hover:bg-slate-100 text-slate-700'
+                                    }`}
+                                  >
+                                    <span className="font-extrabold text-[9px]">{seat.id}</span>
+                                    {isBooked ? (
+                                      <span className="text-[7.5px] text-emerald-600 mt-0.5">✓ დაჯავშნილი</span>
+                                    ) : (
+                                      <span className="text-[8px] text-slate-405 font-mono mt-0.5">🔌 {seat.type}</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* TAB C: SENSORY MONITOR / DECIBELS REALTIME WAVELINE */}
+                        {activeMapTab === 'sensory' && (
+                          <div className="space-y-2 animate-fadeIn">
+                            <div className="flex justify-between items-center text-[8.5px]">
+                              <span className="text-slate-500">Live ხმაურის ინდექსი:</span>
+                              <span className={`px-1.5 py-0.5 rounded font-black ${
+                                liveDecibels < 30 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                              }`}>
+                                {liveDecibels} dB
+                              </span>
+                            </div>
+
+                            {/* Live Sound Spectrum Pulses Bar */}
+                            <div className="flex gap-1 h-5 justify-center items-end bg-slate-50/60 rounded-lg p-1">
+                              {[1, 2, 3, 4, 5, 6, 7].map((bar) => {
+                                const heightFluct = Math.max(
+                                  3,
+                                  Math.round((liveDecibels / 100) * 16 + (Math.random() * 6 - 3))
+                                );
+                                return (
+                                  <div
+                                    key={bar}
+                                    style={{ height: `${heightFluct}px` }}
+                                    className={`w-3.5 rounded-xs transition-all duration-300 ${
+                                      liveDecibels < 30 ? 'bg-teal-500' : 'bg-indigo-500'
+                                    }`}
+                                  />
+                                );
+                              })}
+                            </div>
+
+                            <p className="text-[8px] text-slate-400 font-sans text-center mt-0.5">
+                              {liveDecibels < 30
+                                ? '🤫 სრული სიჩუმეა — იდეალურია რთული პროგრამირებისთვის'
+                                : '☕ ზომიერი ხმაურია — შესაფერისია მეგობრული აუდიენციისთვის'}
+                            </p>
+                          </div>
+                        )}
+
                       </div>
                     </div>
                   ) : (
