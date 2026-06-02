@@ -413,14 +413,68 @@ export default function PhoneMockup({
                   <div className="flex justify-center">
                     <div className="w-16 h-16 rounded-2xl bg-white p-2 flex items-center justify-center border border-indigo-100/60 shadow-md">
                       <svg viewBox="0 0 100 100" className="w-12 h-12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M 24 22 A 36 36 0 1 0 76 22" stroke="url(#nestedGradGeo)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                        <path d="M 50 14 L 78 24 L 50 34 L 22 24 Z" fill="#4f46e5" />
-                        <path d="M 33 24.5 V 30 C 33 34.5 67 34.5 67 30 V 24.5 Z" fill="#312e81" />
-                        <path d="M 50 24 L 75 25 L 75 36" stroke="#312e81" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                        {/* Outer Ring - Circular frame of gradient (matching image) */}
+                        <path
+                          d="M 21 62 A 32 32 0 1 1 79 62"
+                          stroke="url(#nestedGradGeo)"
+                          strokeWidth="9.2"
+                          strokeLinecap="round"
+                          fill="none"
+                        />
+
+                        {/* Core Element 1: Graduation Mortarboard Cap in Slate-900 / Deep Black */}
+                        <path
+                          d="M 44.5 30 L 44.5 36.5 C 44.5 41, 55.5 41, 55.5 36.5 L 55.5 30 Z"
+                          fill="#0f172a"
+                        />
+                        <path
+                          d="M 50 19 L 71 27 L 50 35 L 29 27 Z"
+                          fill="#0f172a"
+                        />
+                        <circle cx="50" cy="27" r="1.5" fill="#0f172a" />
+                        <path
+                          d="M 50 27 C 60 27, 68 28, 68 33 L 68 39"
+                          stroke="#0f172a"
+                          strokeWidth="1.5"
+                          fill="none"
+                          strokeLinecap="round"
+                        />
+                        <rect x="66.5" y="39" width="3" height="1.5" rx="0.5" fill="#0f172a" />
+                        <rect x="66.5" y="41" width="3" height="10" rx="1.5" fill="#0f172a" />
+
+                        {/* Core Element 2: Stylized school desk with tapered splayed legs */}
+                        <rect x="40" y="52" width="20" height="3.5" rx="1" fill="#0f172a" />
+                        <rect x="42.5" y="55.5" width="15" height="2.5" fill="#0f172a" />
+                        <polygon points="43.5,58 46.5,58 45,71 42.5,71" fill="#0f172a" />
+                        <polygon points="53.5,58 56.5,58 57.5,71 55,71" fill="#0f172a" />
+
+                        {/* Core Element 3: Dual layers of beautiful nested book pages wings */}
+                        <path
+                          d="M 50 72 C 38 63, 28 60, 21 62 C 28 69, 38 74, 50 80 Z"
+                          fill="url(#nestedGradGeo)"
+                        />
+                        <path
+                          d="M 50 72 C 62 63, 72 60, 79 62 C 72 69, 62 74, 50 80 Z"
+                          fill="url(#nestedGradGeo)"
+                        />
+
+                        <path
+                          d="M 50 80 C 38 75, 28 71, 22 73 C 29 80, 39 85, 50 89 Z"
+                          fill="url(#nestedGradGeo)"
+                        />
+                        <path
+                          d="M 50 80 C 62 75, 72 71, 78 73 C 71 80, 61 85, 50 89 Z"
+                          fill="url(#nestedGradGeo)"
+                        />
+
+                        {/* Connected Rainbow Gradient */}
                         <defs>
-                          <linearGradient id="nestedGradGeo" x1="24" y1="22" x2="76" y2="90" gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stopColor="#0d9488" />
-                            <stop offset="100%" stopColor="#4f46e5" />
+                          <linearGradient id="nestedGradGeo" x1="15" y1="20" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stopColor="#10b981" /> {/* Luminous Green-Teal */}
+                            <stop offset="30%" stopColor="#06b6d4" /> {/* Electric Cyan */}
+                            <stop offset="55%" stopColor="#2563eb" /> {/* Luminous Royal Blue */}
+                            <stop offset="80%" stopColor="#4f46e5" /> {/* Indigo */}
+                            <stop offset="100%" stopColor="#7c3aed" /> {/* Purple-Violet */}
                           </linearGradient>
                         </defs>
                       </svg>
@@ -712,7 +766,7 @@ export default function PhoneMockup({
                       value={placesSearch}
                       onChange={(e) => setPlacesSearch(e.target.value)}
                       placeholder="მოძებნე მაგიდები, კაფე, მისამართი..."
-                      className="w-full text-xs font-semibold pl-10 pr-4 py-2 bg-white rounded-xl border border-slate-200 shadow-3xs outline-none focus:border-indigo-500"
+                      className="w-full text-xs font-semibold pl-10 pr-4 py-2 bg-white text-slate-800 rounded-xl border border-slate-200 shadow-3xs outline-none focus:border-indigo-500"
                     />
                   </div>
                 </div>
@@ -1219,7 +1273,7 @@ export default function PhoneMockup({
                             value={newReviewAuthor}
                             onChange={(e) => setNewReviewAuthor(e.target.value)}
                             placeholder="სახელი"
-                            className="w-full bg-white border rounded-xl py-2 px-3 outline-none focus:border-indigo-500"
+                            className="w-full bg-white text-black border rounded-xl py-2 px-3 outline-none focus:border-indigo-500"
                           />
                         </div>
 
@@ -1228,13 +1282,13 @@ export default function PhoneMockup({
                           <select
                             value={newReviewRating}
                             onChange={(e) => setNewReviewRating(parseInt(e.target.value))}
-                            className="w-full bg-white border rounded-xl py-2 px-2 shadow-3xs outline-none focus:border-indigo-500 cursor-pointer text-amber-600"
+                            className="w-full bg-white text-black border rounded-xl py-2 px-2 shadow-3xs outline-none focus:border-indigo-500 cursor-pointer text-amber-600"
                           >
-                            <option value="5">⭐⭐⭐⭐⭐ 5 / 5</option>
-                            <option value="4">⭐⭐⭐⭐ 4 / 5</option>
-                            <option value="3">⭐⭐⭐ 3 / 5</option>
-                            <option value="2">⭐⭐ 2 / 5</option>
-                            <option value="1">⭐ 1 / 5</option>
+                            <option value="5" className="text-black">⭐⭐⭐⭐⭐ 5 / 5</option>
+                            <option value="4" className="text-black">⭐⭐⭐⭐ 4 / 5</option>
+                            <option value="3" className="text-black">⭐⭐⭐ 3 / 5</option>
+                            <option value="2" className="text-black">⭐⭐ 2 / 5</option>
+                            <option value="1" className="text-black">⭐ 1 / 5</option>
                           </select>
                         </div>
                       </div>
@@ -1246,7 +1300,7 @@ export default function PhoneMockup({
                           value={newReviewComment}
                           onChange={(e) => setNewReviewComment(e.target.value)}
                           placeholder="დაწერე შენი აზრი ინტერნეტზე, ხმაურზე..."
-                          className="w-full bg-white border rounded-xl py-2 px-3 outline-none focus:border-indigo-500 font-sans"
+                          className="w-full bg-white text-black border rounded-xl py-2 px-3 outline-none focus:border-indigo-500 font-sans"
                         />
                       </div>
 
@@ -1503,7 +1557,7 @@ export default function PhoneMockup({
                             value={enrollmentEmail}
                             onChange={(e) => setEnrollmentEmail(e.target.value)}
                             placeholder="mag: nika@gmail.com"
-                            className="bg-white border rounded-lg py-1.5 px-2.5 text-[11px] flex-1 outline-none text-slate-650"
+                            className="bg-white border rounded-lg py-1.5 px-2.5 text-[11px] flex-1 outline-none text-slate-800"
                           />
                           <button
                             onClick={() => {
