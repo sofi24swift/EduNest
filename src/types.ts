@@ -20,6 +20,8 @@ export interface StudyPlace {
   image: string;
   tags: string[];
   reviews: Review[];
+  lat?: number;
+  lng?: number;
 }
 
 export interface Review {
@@ -60,7 +62,7 @@ export interface Opportunity {
   description: string;
 }
 
-export type ScreenType = 'registration' | 'home' | 'places' | 'place-detail' | 'programs' | 'program-detail' | 'opportunities';
+export type ScreenType = 'registration' | 'home' | 'places' | 'place-detail' | 'programs' | 'program-detail' | 'opportunities' | 'map';
 
 export interface UserProfile {
   name: string;
