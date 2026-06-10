@@ -71,5 +71,6 @@ export interface UserProfile {
   learningMode: 'Online' | 'Offline' | 'Distant' | 'Hybrid';
   email?: string;
   interests?: string[];
+  isPremium?: boolean;
 }
 

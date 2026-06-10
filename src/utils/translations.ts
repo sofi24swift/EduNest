@@ -81,6 +81,8 @@ export interface TranslationDict {
   aiBannerTitle: string;
   aiBannerDesc: string;
   aiBannerBtn: string;
+  buyPremiumBtn: string;
+  premiumStatus: string;
 }
 
 export const TRANSLATIONS: Record<'ka' | 'en' | 'de', TranslationDict> = {
@@ -163,7 +165,9 @@ export const TRANSLATIONS: Record<'ka' | 'en' | 'de', TranslationDict> = {
     aiThinking: "ფიქრობს...",
     aiBannerTitle: "EduNest AI ასისტენტი ⚡",
     aiBannerDesc: "მიიღე მყისიერი რეკომენდაციები შენს ინტერესებზე ორიენტირებული სივრცეებისა და კურსების შესახებ.",
-    aiBannerBtn: "ჩეთში შესვლა"
+    aiBannerBtn: "ჩეთში შესვლა",
+    buyPremiumBtn: "პრემიუმის შეძენა",
+    premiumStatus: "პრემიუმ მომხმარებელი"
   },
   en: {
     sloganTitle: "Less searching,",
@@ -244,11 +248,13 @@ export const TRANSLATIONS: Record<'ka' | 'en' | 'de', TranslationDict> = {
     aiThinking: "Thinking...",
     aiBannerTitle: "EduNest AI Assistant ⚡",
     aiBannerDesc: "Receive instant recommendations tailored to your profile, interests, and study format.",
-    aiBannerBtn: "Start AI Chat"
+    aiBannerBtn: "Start AI Chat",
+    buyPremiumBtn: "Get Premium",
+    premiumStatus: "Premium Member"
   },
   de: {
     sloganTitle: "Weniger Suchen,",
-    sloganSubtitle: "Mehr Wachsen.",
+    sloganSubtitle: "Mehr Wachsen,",
     sloganBadge: "Premium-System",
     sloganDesc: "Finden Sie gemütliche Lernräume in Tiflis, entwickeln Sie Ihre Fähigkeiten und sichern Sie sich Stipendien.",
     searchPlaceholder: "Lernorte, Kurse, Stipendien suchen...",
@@ -319,12 +325,14 @@ export const TRANSLATIONS: Record<'ka' | 'en' | 'de', TranslationDict> = {
 
     // Chatbot
     aiAssistant: "EduNest AI Assistent",
-    aiWelcome: "Hallo! Ich bin EduNest AI, dein persönlicher Begleiter. Wie kann ich dir heute helfen, erstklassige Coworking-Spaces, Bibliotheken oder Fördermittel in Tiflis zu entdecken? 🚀",
+    aiWelcome: "Hallo! Ich am EduNest AI, dein persönlicher Begleiter. Wie kann ich dir heute helfen, erstklassige Coworking-Spaces, Bibliotheken oder Fördermittel in Tiflis zu entdecken? 🚀",
     aiPlaceholder: "Frage mich nach leisen Cafés, IT-Kursen oder Stipendien...",
     aiSend: "Senden",
     aiThinking: "Denkt nach...",
     aiBannerTitle: "EduNest AI Assistent ⚡",
     aiBannerDesc: "Erhalten Sie sofort maßgeschneiderte Empfehlungen basierend auf Ihren Interessen und Ihrem Studienziel.",
-    aiBannerBtn: "AI-Chat starten"
+    aiBannerBtn: "AI-Chat starten",
+    buyPremiumBtn: "Premium holen",
+    premiumStatus: "Premium-Mitglied"
   }
 };
