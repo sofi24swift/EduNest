@@ -18,6 +18,7 @@ import {
   PROGRAMS, 
   OPPORTUNITIES 
 } from '../data';
+import { TRANSLATIONS } from '../utils/translations';
 import { 
   MapPin, 
   BookOpen, 
@@ -82,6 +83,73 @@ export default function PhoneMockup({
   // App states
   const [placesList, setPlacesList] = useState<StudyPlace[]>(STUDY_PLACES);
   const [placesSearch, setPlacesSearch] = useState('');
+
+  // Active language and translations state
+  const [activeLanguage, setActiveLanguage] = useState<'ka' | 'en' | 'de'>('ka');
+  const t = useMemo(() => TRANSLATIONS[activeLanguage], [activeLanguage]);
+
+  // AI Chatbot states
+  const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'model', text: string }>>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatbotOpen, setChatbotOpen] = useState(false);
+
+  // Initialize chatbot messages when language changes
+  useEffect(() => {
+    setChatMessages([
+      { role: 'model', text: TRANSLATIONS[activeLanguage].aiWelcome }
+    ]);
+  }, [activeLanguage]);
+
+  // Chat message sender
+  const handleSendChatMessage = async () => {
+    if (!chatInput.trim()) return;
+    const userMsgText = chatInput;
+    setChatInput('');
+    
+    const newMessages = [...chatMessages, { role: 'user' as const, text: userMsgText }];
+    setChatMessages(newMessages);
+    setChatLoading(true);
+
+    try {
+      const response = await fetch('/api/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMsgText,
+          history: chatMessages.slice(1), 
+          userProfile: registeredUser,
+          language: activeLanguage,
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+      setChatMessages([...newMessages, { role: 'model' as const, text: data.text }]);
+    } catch (e) {
+      console.error(e);
+      let errorMsg = 'კავშირის პრობლემაა. გთხოვთ სცადოთ მოგვიანებით.';
+      if (activeLanguage === 'en') errorMsg = 'Connection error. Please try again later.';
+      if (activeLanguage === 'de') errorMsg = 'Verbindungsfehler. Bitte versuchen Sie es später noch einmal.';
+      
+      setChatMessages([...newMessages, { role: 'model' as const, text: errorMsg }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  // Auto scroll to bottom anchor inside the chatbot
+  useEffect(() => {
+    if (chatbotOpen) {
+      setTimeout(() => {
+        const anchor = document.getElementById('chat-bottom-anchor');
+        anchor?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [chatMessages, chatbotOpen]);
   
   // Custom sensory environment simulation states (migrated internal to the phone as requested!)
   const [currentDecibelOverride, setCurrentDecibelOverride] = useState<number>(0); // Noise reducer factor (minus dB)
@@ -140,6 +208,21 @@ export default function PhoneMockup({
   const [reviewError, setReviewError] = useState('');
 
   const [profileSheetOpen, setProfileSheetOpen] = useState(false);
+
+  // Profile editing states
+  const [profileEditing, setProfileEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editInterests, setEditInterests] = useState<string[]>([]);
+
+  // Automatically load values when profile modal opens
+  useEffect(() => {
+    if (profileSheetOpen && registeredUser) {
+      setEditName(registeredUser.name);
+      setEditEmail(registeredUser.email || '');
+      setEditInterests(registeredUser.interests || [registeredUser.studyGoal]);
+    }
+  }, [profileSheetOpen, registeredUser]);
 
   // Active place descriptor
   const activePlace = useMemo(() => {
@@ -399,31 +482,21 @@ export default function PhoneMockup({
   };
 
   return (
-    <div className="relative mx-auto w-full max-w-[360px] rounded-[52px] border-[12px] border-slate-900 bg-slate-950 p-0.5 iphone-bezel select-none overflow-hidden shadow-2xl">
-      
-      {/* Camera Notch Dynamic Island */}
-      <div className="absolute top-4 left-1/2 z-50 h-[30px] w-[124px] -translate-x-1/2 rounded-full bg-black flex items-center justify-between px-2.5 shadow-inner">
-        <div className="h-2 w-2 rounded-full bg-slate-900/60" />
-        <div className="h-1 text-[8px] text-teal-400 font-mono flex items-center gap-1">
-          <CircleDot className="w-1.5 h-1.5 animate-pulse bg-teal-400 rounded-full" />
-          <span className="text-[7.5px] font-bold tracking-tight">EduNest-Live</span>
-        </div>
-        <div className="h-1 w-3 rounded-full bg-slate-900" />
-      </div>
+    <div className="relative mx-auto w-full md:max-w-[420px] h-screen md:h-[740px] md:rounded-3xl bg-slate-50 flex flex-col overflow-hidden md:border md:border-slate-200 md:shadow-2xl select-none">
 
-      {/* Main Simulated Phone screen */}
-      <div className="h-[680px] w-full rounded-[40px] bg-slate-50 flex flex-col overflow-hidden relative">
-
-        {/* Dynamic iOS Status Bar with current time */}
-        <div className="bg-white/95 backdrop-blur-md px-7 pt-4 pb-1.5 border-b border-slate-100 flex justify-between items-center text-[11px] text-slate-800 font-bold z-40 shrink-0">
-          <span className="font-sans font-black select-none">12:30 PM</span>
-          <div className="flex items-center gap-1.5">
-            <Signal className="w-3.5 h-3.5 text-slate-800" />
-            <span className="text-[10px] font-mono font-extrabold text-teal-600">5G</span>
-            <Wifi className="w-3.5 h-3.5 text-slate-800" />
-            <div className="h-3 w-6 border-2 border-slate-800 rounded-md p-0.5 flex items-center bg-transparent gap-0.5">
-              <div className="w-3.5 h-1.5 bg-slate-800 rounded-xs" />
-            </div>
+        {/* Global Multi-Language Switcher Row */}
+        <div className="bg-white px-5 py-2 border-b border-slate-100 flex justify-between items-center text-xs text-slate-500 shrink-0 select-none z-40 relative">
+          <span className="font-bold text-[9px] uppercase tracking-wider text-slate-400">EduNest Portal</span>
+          <div className="flex items-center gap-1">
+            {(['ka', 'en', 'de'] as const).map((lang) => (
+              <button
+                key={lang}
+                onClick={() => setActiveLanguage(lang)}
+                className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight transition cursor-pointer ${activeLanguage === lang ? 'bg-indigo-650 text-white shadow-3xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              >
+                {lang === 'ka' ? 'GE' : lang === 'en' ? 'EN' : 'DE'}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -628,8 +701,8 @@ export default function PhoneMockup({
                 {/* Greeting banner header */}
                 <div className="flex items-center justify-between mt-2">
                   <div>
-                    <span className="font-mono text-[9px] text-slate-400 uppercase tracking-widest font-bold">წარმატებულ დღეს გისურვებთ!</span>
-                    <h2 className="font-display text-xl font-bold text-slate-900 leading-tight">სალამი, {registeredUser ? registeredUser.name : 'ნიკა'} 👋</h2>
+                    <span className="font-mono text-[9px] text-slate-400 uppercase tracking-widest font-bold">{t.welcomeBack}</span>
+                    <h2 className="font-display text-xl font-bold text-slate-900 leading-tight">{t.greetings}, {registeredUser ? registeredUser.name : (activeLanguage === 'ka' ? 'ნიკა' : 'Nika')} 👋</h2>
                   </div>
                   <div 
                     onClick={() => setProfileSheetOpen(true)}
@@ -648,12 +721,12 @@ export default function PhoneMockup({
                   <div className="absolute top-2 right-2 rounded-full bg-white/10 px-2 py-0.5 text-[8px] uppercase tracking-widest font-mono">
                     ONLINE BLUEPRINT
                   </div>
-                  <span className="font-mono text-[8px] uppercase tracking-widest text-indigo-150 opacity-90 block">პრემიუმ სისტემა</span>
+                  <span className="font-mono text-[8px] uppercase tracking-widest text-[#e0e7ff] opacity-90 block">{t.sloganBadge}</span>
                   <h3 className="font-display text-[15px] font-bold mt-1 leading-snug">
-                    „შენი სივრცე.<br />შენი მომავალი.“
+                    „{t.sloganTitle}<br />{t.sloganSubtitle}“
                   </h3>
-                  <p className="text-[10px] text-indigo-50 opacity-95 mt-2 font-sans leading-relaxed">
-                    მოძებნე მყუდრო სამუშაო სივრცეები თბილისში, განაგრძე სწავლა და მოიპოვე გრანტები.
+                  <p className="text-[10px] text-[#e0e7ff] opacity-95 mt-2 font-sans leading-relaxed">
+                    {t.sloganDesc}
                   </p>
                 </div>
 
@@ -663,12 +736,12 @@ export default function PhoneMockup({
                   className="rounded-xl border border-slate-200 bg-white p-3 flex items-center gap-3 shadow-3xs cursor-pointer hover:border-indigo-400 transition"
                 >
                   <Search className="w-4 h-4 text-slate-400" />
-                  <span className="text-[11px] text-slate-400 font-sans">მოძებნე სივრცეები, განაცხადები...</span>
+                  <span className="text-[11px] text-slate-400 font-sans">{t.searchPlaceholder}</span>
                 </div>
 
                 {/* Opportunities hub categories in Georgian */}
                 <div className="space-y-2.5">
-                  <h4 className="font-display text-[9px] font-bold uppercase tracking-wider text-slate-400">EduNest ინფრასტრუქტურა</h4>
+                  <h4 className="font-display text-[9px] font-bold uppercase tracking-wider text-slate-400">{t.infraHeader}</h4>
                   <div className="grid grid-cols-3 gap-2">
                     
                     {/* HUB 1: SPACES */}
@@ -680,8 +753,10 @@ export default function PhoneMockup({
                         <MapPin className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="block font-display text-[11px] font-bold text-slate-800 leading-none">სივრცეები</span>
-                        <span className="text-[8.5px] text-indigo-600 font-sans font-bold mt-1 block">{placesList.length} წერტილი</span>
+                        <span className="block font-display text-[10px] font-bold text-slate-800 leading-none">{t.tabSpaces}</span>
+                        <span className="text-[8px] text-indigo-600 font-sans font-bold mt-1 block">
+                          {placesList.length} {activeLanguage === 'ka' ? 'წერტილი' : activeLanguage === 'en' ? 'spots' : 'Plätze'}
+                        </span>
                       </div>
                     </div>
 
@@ -694,8 +769,10 @@ export default function PhoneMockup({
                         <Map className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="block font-display text-[11px] font-bold text-slate-800 leading-none">რუკა (GPS)</span>
-                        <span className="text-[8.5px] text-teal-600 font-sans font-bold mt-1 block">ცოცხალი</span>
+                        <span className="block font-display text-[10px] font-bold text-slate-800 leading-none">{t.tabMap}</span>
+                        <span className="text-[8px] text-teal-600 font-sans font-bold mt-1 block">
+                          {activeLanguage === 'ka' ? 'ცოცხალი' : activeLanguage === 'en' ? 'Live GPS' : 'Echtzeit'}
+                        </span>
                       </div>
                     </div>
 
@@ -708,8 +785,10 @@ export default function PhoneMockup({
                         <BookOpen className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="block font-display text-[11px] font-bold text-slate-800 leading-none">კურსები</span>
-                        <span className="text-[8.5px] text-purple-600 font-sans font-bold mt-1 block">{PROGRAMS.length} სილაბუსი</span>
+                        <span className="block font-display text-[10px] font-bold text-slate-800 leading-none">{t.tabCourses}</span>
+                        <span className="text-[8px] text-purple-600 font-sans font-bold mt-1 block">
+                          {PROGRAMS.length} {activeLanguage === 'ka' ? 'სილაბუსი' : activeLanguage === 'en' ? 'syllabus' : 'Syllabi'}
+                        </span>
                       </div>
                     </div>
 
@@ -721,11 +800,11 @@ export default function PhoneMockup({
                   <div className="flex justify-between items-center border-b border-slate-50 pb-2">
                     <span className="rounded-full bg-amber-50 border border-amber-100 text-amber-850 text-[8.5px] font-bold px-2 py-0.5 flex items-center gap-1">
                       <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500" />
-                      საუკეთესო სივრცე დღეს
+                      {activeLanguage === 'ka' ? 'საუკეთესო სივრცე დღეს' : activeLanguage === 'en' ? "Today's Curated Spot" : 'Bester Lernplatz heute'}
                     </span>
                     <span className="text-[8.5px] text-slate-400 font-semibold font-mono flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      განახლდა ახლახან
+                      {activeLanguage === 'ka' ? 'განახლდა ახლახან' : activeLanguage === 'en' ? 'Updated recently' : 'Vor kurzem aktualisiert'}
                     </span>
                   </div>
 
@@ -743,11 +822,39 @@ export default function PhoneMockup({
                         {processedPlacesList[0].address}
                       </p>
                       <div className="flex items-center gap-2 mt-1 font-mono text-[9px] text-slate-600">
-                        <span className="text-emerald-600 font-bold">ხმაური: {100 - processedPlacesList[0].noiseLevel}% მშვიდი</span>
+                        <span className="text-emerald-600 font-bold">
+                          {activeLanguage === 'ka' ? `ხმაური: ${100 - processedPlacesList[0].noiseLevel}% მშვიდი` : activeLanguage === 'en' ? `Noise: ${100 - processedPlacesList[0].noiseLevel}% quiet` : `Lärm: ${100 - processedPlacesList[0].noiseLevel}% ruhig`}
+                        </span>
                         <span>·</span>
-                        <span className="text-indigo-600 font-bold">{processedPlacesList[0].distance}</span>
+                        <span className="text-indigo-650 font-bold">{processedPlacesList[0].distance}</span>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* AI assistant home promo card */}
+                <div className="rounded-2xl bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed] p-0.5 shadow-md">
+                  <div className="rounded-[14px] bg-slate-900 text-white p-4.5 space-y-3 relative overflow-hidden">
+                    <div className="absolute top-[-20%] right-[-20%] w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+                    <div className="flex justify-between items-start">
+                      <div className="flex gap-2 items-center">
+                        <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center">
+                          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                        </div>
+                        <h4 className="font-display text-[11px] font-black text-slate-100">{t.aiBannerTitle}</h4>
+                      </div>
+                      <span className="rounded-full bg-slate-800 border border-slate-700 font-mono text-[7px] font-bold px-1.5 py-0.5 text-indigo-300">GEMINI POWERED</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                      {t.aiBannerDesc}
+                    </p>
+                    <button
+                      onClick={() => setChatbotOpen(true)}
+                      className="w-full py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 active:scale-98 text-white font-bold text-[10px] shadow-sm transition cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
+                      {t.aiBannerBtn}
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -2039,12 +2146,157 @@ export default function PhoneMockup({
           </div>
         )}
 
-        {/* USER PROFILE DRAWER PANEL */}
+        {/* INTERACTIVE AI RECOMMENDATIONS CHATBOT */}
+        {chatbotOpen && (
+          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex flex-col justify-end">
+            <div 
+              className="absolute inset-0" 
+              onClick={() => setChatbotOpen(false)}
+            />
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              className="relative bg-slate-900 text-white rounded-t-3xl shadow-2xl z-55 h-[83%] flex flex-col overflow-hidden"
+            >
+              {/* Drag bar and header */}
+              <div className="p-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed] flex items-center justify-center shadow-md shadow-indigo-500/10">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-[12px] font-extrabold text-slate-100">{t.aiAssistant}</h3>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[8.5px] text-slate-400 font-bold uppercase tracking-wider">Gemini Active</span>
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setChatbotOpen(false)}
+                  className="w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center cursor-pointer text-slate-300 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Chat Message Box */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar bg-slate-950">
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    {msg.role === 'model' && (
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed] flex items-center justify-center shadow-md font-sans text-xs shrink-0 self-end">
+                        💡
+                      </div>
+                    )}
+                    <div className={`max-w-[78%] rounded-2xl p-3 text-[10.5px] leading-relaxed shadow-sm ${
+                      msg.role === 'user' 
+                        ? 'bg-gradient-to-tr from-[#2563eb] to-[#7c3aed] text-white rounded-br-xs' 
+                        : 'bg-slate-800 text-slate-100 rounded-bl-xs border border-slate-700/50'
+                    }`}>
+                      {msg.text}
+                    </div>
+                    {msg.role === 'user' && (
+                      <div className="w-7 h-7 rounded-full text-white font-black text-[9px] flex items-center justify-center shrink-0 self-end leading-none bg-indigo-600 border border-indigo-500 shadow-sm">
+                        {registeredUser?.name ? registeredUser.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
+                {chatLoading && (
+                  <div className="flex gap-2 justify-start">
+                    <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center animate-spin shrink-0">
+                      <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
+                    <div className="bg-slate-800 text-slate-400 border border-slate-700/50 rounded-2xl rounded-bl-xs p-3 text-[10.5px] flex items-center gap-1.5 shadow-sm">
+                      <span className="font-bold">{t.aiThinking}...</span>
+                    </div>
+                  </div>
+                )}
+                
+                <div id="chat-bottom-anchor" />
+              </div>
+
+              {/* Suggestions Quick Buttons */}
+              <div className="px-3 py-2 bg-slate-900 border-t border-slate-800 flex gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+                {[
+                  {
+                    ka: "🔍 მირჩიე ქოვორქინგი",
+                    en: "🔍 Coworking recommendation",
+                    de: "🔍 Co-Working empfehlen",
+                    prompt: activeLanguage === 'ka' 
+                      ? "მითხარი, რომელია საუკეთესო მშვიდი ქოვორქინგი თბილისში?" 
+                      : activeLanguage === 'en' 
+                        ? "What are the best places in Tbilisi with good power outlets and ultra-fast Wi-Fi?" 
+                        : "Welche sind die besten Co-Working-Plätze in Tiflis?"
+                  },
+                  {
+                    ka: "💻 საუკეთესო IT კურსები",
+                    en: "💻 Best IT courses",
+                    de: "💻 Beste IT-Kurse",
+                    prompt: activeLanguage === 'ka' 
+                      ? "რა ტიპის IT კურსებს ან აკადემიებს მირჩევდი სწავლისთვის?" 
+                      : activeLanguage === 'en' 
+                        ? "Can you recommend the top tech courses available on EduNest?" 
+                        : "Können Sie mir IT-Kurse auf Deutsch empfehlen?"
+                  },
+                  {
+                    ka: "🎓 სასტიპენდიო გრანტები",
+                    en: "🎓 Grants & Loans",
+                    de: "🎓 Bildungsstipendien",
+                    prompt: activeLanguage === 'ka' 
+                      ? "როგორ შემიძლია მოვიპოვო დაფინანსება ან გრანტები?" 
+                      : activeLanguage === 'en' 
+                        ? "What is the scholarship process and how should I apply?" 
+                        : "Welche Stipendien sind derzeit verfügbar?"
+                  }
+                ].map((s, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setChatInput(s.prompt);
+                    }}
+                    className="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-[9px] font-bold text-slate-300 border border-slate-700 whitespace-nowrap cursor-pointer transition shrink-0"
+                  >
+                    {activeLanguage === 'ka' ? s.ka : activeLanguage === 'en' ? s.en : s.de}
+                  </button>
+                ))}
+              </div>
+
+              {/* Chat typing block */}
+              <div className="p-3 bg-slate-850 border-t border-slate-700 flex gap-2 items-center shrink-0">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSendChatMessage();
+                  }}
+                  placeholder={t.aiPlaceholder}
+                  className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-[11px] font-sans text-white focus:border-indigo-500 outline-none placeholder-slate-500"
+                />
+                <button
+                  onClick={handleSendChatMessage}
+                  disabled={chatLoading}
+                  className="w-8.5 h-8.5 rounded-xl bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed] hover:opacity-95 text-white flex items-center justify-center shadow-md cursor-pointer disabled:opacity-50 transition shrink-0"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* USER PROFILE DRAWER PANEL (INTERACTIVE / DYNAMICALLY EDITABLE) */}
         {profileSheetOpen && (
           <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex flex-col justify-end">
             <div 
               className="absolute inset-0" 
-              onClick={() => setProfileSheetOpen(false)}
+              onClick={() => {
+                setProfileSheetOpen(false);
+                setProfileEditing(false);
+              }}
             />
             <motion.div 
               initial={{ y: "100%" }}
@@ -2053,75 +2305,166 @@ export default function PhoneMockup({
             >
               <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto" />
               
-              <div className="flex items-center gap-3.5 pt-2">
-                <div className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-tr from-[#06b6d4] via-[#2563eb] to-[#7c3aed] text-white text-base font-black shadow-sm shrink-0">
-                  {registeredUser?.name ? registeredUser.name.charAt(0).toUpperCase() : 'M'}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 pt-1">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-tr from-[#06b6d4] via-[#2563eb] to-[#7c3aed] text-white text-xs font-black shadow-xs shrink-0 select-none">
+                    {editName ? editName.charAt(0).toUpperCase() : 'M'}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-display text-[12px] font-extrabold text-slate-900 truncate">{editName || 'მაია ჩენი'}</h3>
+                    <span className="text-[9px] text-slate-500 font-mono block leading-none mt-0.5">{editEmail || 'your@email.com'}</span>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-display text-[14px] font-extrabold text-slate-900 truncate">{registeredUser ? registeredUser.name : 'მაია ჩენი'}</h3>
-                  <span className="text-[9.5px] text-slate-500 font-mono block leading-none mt-0.5">{registeredUser?.email || 'your@email.com'}</span>
-                </div>
+                
+                {/* Toggle editing button */}
+                <button
+                  type="button"
+                  onClick={() => setProfileEditing(!profileEditing)}
+                  className="px-2.5 py-1 text-[9px] font-bold rounded-lg border border-slate-250 hover:bg-slate-50 text-slate-700 transition cursor-pointer"
+                >
+                  {profileEditing ? (activeLanguage === 'ka' ? 'გაუქმება ❌' : activeLanguage === 'en' ? 'Cancel ❌' : 'Abbrechen ❌') : '✏️ ' + (activeLanguage === 'ka' ? 'რედაქტირება' : activeLanguage === 'en' ? 'Edit Profile' : 'Profil bearbeiten')}
+                </button>
               </div>
 
-              <div className="space-y-3 pt-1 text-xs">
-                
-                {/* Modern Track configurations with custom interest tag list */}
-                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3 text-left">
-                  <div className="flex flex-col gap-1.5 animate-fade-in">
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">არჩეული სასწავლო სფეროები</span>
-                    <div className="flex flex-wrap gap-1 mt-0.5">
-                      {registeredUser?.interests && registeredUser.interests.length > 0 ? (
-                        registeredUser.interests.map((interest) => (
-                          <span key={interest} className="text-[9px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 transition-transform hover:scale-105">
+              {profileEditing ? (
+                /* EDIT FORM */
+                <div className="space-y-3.5 text-left text-xs pt-1">
+                  <div className="space-y-1">
+                    <label className="block text-slate-800 font-extrabold text-[8.5px] uppercase tracking-wider">{activeLanguage === 'ka' ? 'სრული სახელი' : activeLanguage === 'en' ? 'Full Name' : 'Vollständiger Name'}</label>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-[10px] font-semibold text-slate-800 focus:border-indigo-500 outline-none transition"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <label className="block text-slate-800 font-extrabold text-[8.5px] uppercase tracking-wider">{activeLanguage === 'ka' ? 'ელ-ფოსტა' : activeLanguage === 'en' ? 'Email Address' : 'E-Mail-Adresse'}</label>
+                    <input
+                      type="email"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-[10px] font-semibold text-slate-800 focus:border-indigo-500 outline-none transition"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-slate-800 font-extrabold text-[8.5px] uppercase tracking-wider">{t.selectedFields}</label>
+                    <div className="flex flex-wrap gap-1 pt-1 max-h-[100px] overflow-y-auto no-scrollbar">
+                      {[
+                        'ფინანსები', 'ტექნოლოგიები', 'ხელოვნური ინტელექტი', 'მედიცინა', 
+                        'ბიზნესი', 'მეწარმეობა', 'საინჟინრო საქმე', 'დიზაინი', 'უცხო ენები'
+                      ].map((interest) => {
+                        const isSelected = editInterests.includes(interest);
+                        return (
+                          <button
+                            key={interest}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setEditInterests(prev => prev.filter(x => x !== interest));
+                              } else {
+                                setEditInterests(prev => [...prev, interest]);
+                              }
+                            }}
+                            className={`text-[8px] px-2.5 py-1 rounded-full font-bold transition-all border cursor-pointer ${
+                              isSelected
+                                ? 'bg-indigo-600 text-white border-transparent'
+                                : 'bg-slate-50 text-slate-600 border-slate-200'
+                            }`}
+                          >
                             {interest}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-[9px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-[#2563eb] border border-[#2563eb]/20">
-                          {registeredUser ? registeredUser.studyGoal : 'ტექნოლოგიები'}
-                        </span>
-                      )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  <div className="border-t border-slate-150 pt-2.5 flex justify-between items-center text-[11px]">
-                    <span className="text-slate-500 font-medium">პლატფორმის რეჟიმი:</span>
-                    <span className="font-extrabold text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                      აქტიური წევრი
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-500 font-medium">ანგარიშის ID:</span>
-                    <span className="font-mono text-slate-600 font-bold bg-slate-100 px-1.5 py-0.5 rounded text-[9px]">
-                      EN-2026-CH
-                    </span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onRegister({
+                        name: editName.trim() || 'მაია ჩენი',
+                        avatar: registeredUser?.avatar || '',
+                        studyGoal: editInterests[0] || 'ტექნოლოგიები',
+                        learningMode: registeredUser?.learningMode || 'Offline',
+                        email: editEmail.trim() || 'your@email.com',
+                        interests: editInterests,
+                      });
+                      setProfileEditing(false);
+                      setProfileSheetOpen(false);
+                    }}
+                    className="w-full py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-extrabold text-[10.5px] shadow-sm hover:opacity-95 transition cursor-pointer text-center"
+                  >
+                    {activeLanguage === 'ka' ? 'ცვლილებების შენახვა 💾' : activeLanguage === 'en' ? 'Save Changes 💾' : 'Änderungen speichern 💾'}
+                  </button>
                 </div>
+              ) : (
+                /* PROFILE READ-ONLY DISPLAY VIEW WITH MULTILINGUAL COMPATIBILITY */
+                <div className="space-y-3 pt-1 text-xs">
+                  
+                  <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3 text-left">
+                    <div className="flex flex-col gap-1.5 font-sans">
+                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
+                        {t.selectedFields}
+                      </span>
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {editInterests && editInterests.length > 0 ? (
+                          editInterests.map((interest) => (
+                            <span key={interest} className="text-[9px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                              {interest}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[9px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                            {registeredUser ? registeredUser.studyGoal : 'ტექნოლოგიები'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                {/* Reset and Logout inside simulator drawer */}
-                <button
-                  onClick={() => {
-                    setProfileSheetOpen(false);
-                    onSignOut();
-                  }}
-                  className="w-full py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-[11px]"
-                >
-                  პროფილის გადატვირთვა / გამოსვლა 🔄
-                </button>
+                    <div className="border-t border-slate-150 pt-2.5 flex justify-between items-center text-[10.5px] font-sans">
+                      <span className="text-slate-500 font-medium">{t.platformMode}:</span>
+                      <span className="font-extrabold text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                        {t.activeMember}
+                      </span>
+                    </div>
 
-                <button
-                  onClick={() => setProfileSheetOpen(false)}
-                  className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition flex items-center justify-center cursor-pointer text-[11px]"
-                >
-                  დახურვა
-                </button>
-              </div>
+                    <div className="flex justify-between items-center text-[10.5px] font-sans">
+                      <span className="text-slate-500 font-medium">{t.accountId}:</span>
+                      <span className="font-mono text-slate-600 font-bold bg-slate-100 px-1.5 py-0.5 rounded text-[8.5px]">
+                        EN-2026-CH
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Reset and Logout inside simulator drawer */}
+                  <button
+                    onClick={() => {
+                      setProfileSheetOpen(false);
+                      onSignOut();
+                    }}
+                    className="w-full py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-[10.5px]"
+                  >
+                    {t.resetProfile}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setProfileSheetOpen(false);
+                      setProfileEditing(false);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition flex items-center justify-center cursor-pointer text-[10.5px]"
+                  >
+                    {t.closeBtn}
+                  </button>
+                </div>
+              )}
             </motion.div>
           </div>
         )}
 
       </div>
-    </div>
   );
 }
