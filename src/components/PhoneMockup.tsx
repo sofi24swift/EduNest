@@ -65,6 +65,233 @@ import {
   MessageSquare
 } from 'lucide-react';
 
+const TEXT_TRANSLATIONS: Record<string, { en: string, de: string }> = {
+  // Author names
+  'ნიკა კავთარაძე': { en: 'Nika Kavtaradze', de: 'Nika Kawtaradse' },
+  'ლუკა ტაბატაძე': { en: 'Luka Tabatadze', de: 'Luka Tabatadse' },
+  'ელენე მელიქიშვილი': { en: 'Elene Melikishvili', de: 'Elene Melikischwili' },
+  'გიორგი ბერიძე': { en: 'Giorgi Beridze', de: 'Giorgi Beridse' },
+  'საბა გოგოლაძე': { en: 'Saba Gogoladze', de: 'Saba Gogoladse' },
+
+  // Dates
+  'გუშინ': { en: 'yesterday', de: 'gestern' },
+  '3 დღის წინ': { en: '3 days ago', de: 'vor 3 Tagen' },
+  '2 დღის წინ': { en: '2 days ago', de: 'vor 2 Tagen' },
+  '4 დღის წინ': { en: '4 days ago', de: 'vor 4 Tagen' },
+  '1 კვირის წინ': { en: '1 week ago', de: 'vor 1 Woche' },
+
+  // Comments
+  'გამორჩეულად მშვიდი გარემო სწრაფი ოპტიკური ინტერნეტით. როზეტები ჩაშენებულია ყველა მაგიდაზე. ძალიან გირჩევთ ფოკუს-ბუთებს!': {
+    en: 'Exceptional quiet environment with fast optical fiber internet. Power outlets integrated on all desk spots. Highly recommend focus booths!',
+    de: 'Außergewöhnlich ruhige Umgebung mit schnellem Glasfaser-WLAN. Steckdosen sind an allen Schreibtischplätzen integriert. Fokusboxen sehr zu empfehlen!'
+  },
+  'ძალიან ზომიერი ხმაური, კარგი განათება. უგემრიელესი ფილტრ-ყავა აქვთ და სავარძლები საათობით მუშაობისას ზურგს არ გტკენს.': {
+    en: 'Very moderate noise level, excellent lighting. They serve delicious filter coffee and chairs won\'t hurt your back for hours of work.',
+    de: 'Sehr mäßiger Lärmpegel, gute Beleuchtung. Sie haben leckeren Filterkaffee und Stühle tun Ihrem Rücken auch nach stundenlanger Arbeit nicht weh.'
+  },
+  'შესანიშნავი მუსიკა და სასიამოვნო ატმოსფერო. ნაშუადღევს ხალხმრავლობაა ხოლმე, მაგრამ უკანა მაგიდებთან ყოველთვისაა თავისუფალი დენის წყარო.': {
+    en: 'Great music and pleasant atmosphere. It gets crowded in the afternoon, but there is always a free outer outlet available near the back desk spots.',
+    de: 'Tolle Musik und angenehme Atmosphäre. Nachmittags wird es voll, aber an den hinteren Plätzen gibt es immer freie Steckdosen.'
+  },
+  'ნამდვილი არქიტექტურული საოცრება სწავლისთვის. მაღალი ჭერი, აკადემიური აურა და ღრმა ფოკუსირებისთვის საუკეთესო მყუდრო მაგიდები.': {
+    en: 'A true architectural marvel for study. High ceilings, academic aura, and cozy desks that are perfect for deep focus sessions.',
+    de: 'Ein echtes architektonisches Wunderwerk zum Lernen. Hohe Decken, akademische Aura und gemütliche Schreibtische, perfekt für tiefe Konzentration.'
+  },
+  'ზოგიერთ მაგიდაზე გხვდება სპეციალური 4K მონიტორი, რომელსაც შეგიძლია დაუკავშირო ლეპტოპი. საოცარი კომფორტია სრული ფოკუსისთვის!': {
+    en: 'Some desks even feature a dedicated 4K monitor to connect your own laptop to. Incredible comfort for absolute focus sessions!',
+    de: 'Einige Schreibtische verfügen sogar über einen eigenen 4K-Monitor für Ihren Laptop. Unglaublicher Komfort für absolute Konzentration!'
+  },
+
+  // Study Places Addresses/Other
+  'მერაბ კოსტავას ქუჩა 14, თბილისი': {
+    en: '14 Merab Kostava Street, Tbilisi',
+    de: 'Merab-Kostava-Straße 14, Tiflis'
+  },
+  'ეგნატე ნინოშვილის ქუჩა 8, თბილისი': {
+    en: '8 Egnate Ninoshvili Street, Tbilisi',
+    de: 'Egnate-Ninoshvili-Straße 8, Tiflis'
+  },
+  'ლადო გუდიაშვილის მოედანი, თბილისი': {
+    en: 'Lado Gudiashvili Square, Tbilisi',
+    de: 'Lado-Gudiaschwili-Platz, Tiflis'
+  },
+  'ილია ჭავჭავაძის გამზირი 32, თბილისი': {
+    en: '32 Ilia Chavchavadze Avenue, Tbilisi',
+    de: 'Ilia-Chavchavadze-Allee 32, Tiflis'
+  },
+
+  // Categories/Types for opportunities
+  'სტიპენდია': { en: 'Scholarship', de: 'Stipendium' },
+  'სტაჟირება': { en: 'Internship', de: 'Praktikum' },
+  'დისტანციური სამსახური': { en: 'Remote Job', de: 'Remote-Job' },
+  'Scholarship': { en: 'Scholarship', de: 'Stipendium' },
+  'Internship': { en: 'Internship', de: 'Praktikum' },
+  'Remote Work': { en: 'Remote Work', de: 'Remote-Arbeit' },
+  'ყველა ტიპი': { en: 'All Types', de: 'Alle Typen' },
+  '🎓 სტიპენდია': { en: '🎓 Scholarship', de: '🎓 Stipendium' },
+  '💼 სტაჟირება': { en: '💼 Internship', de: '💼 Praktikum' },
+  '🌐 დისტანციური სამსახური': { en: '🌐 Remote Job', de: '🌐 Remote-Job' },
+  'ყველა': { en: 'All', de: 'Alle' },
+  '💻 Tech / AI': { en: '💻 Tech / AI', de: '💻 Tech / KI' },
+  '✍️ ენები': { en: '✍️ Languages', de: '✍️ Sprachen' },
+  '📈 ბიზნესი': { en: '📈 Business', de: '📈 Business' },
+  '🎓 IELTS': { en: '🎓 IELTS', de: '🎓 IELTS' },
+  'ნებისმიერი ფასი': { en: 'Any Price', de: 'Beliebiger Preis' },
+  '🆓 უფასო': { en: '🆓 Free', de: '🆓 Kostenlos' },
+  '💳 ფასიანი': { en: '💳 Paid', de: '💳 Kostenpflichtig' },
+
+  // Map Header Overlay
+  'ცოცხალი საორიენტაციო რუკა': { en: 'Live Orientation Map', de: 'Live-Orientierungskarte' },
+  'ინტერაქტიული GPS ნავიგაცია და სენსორები': { en: 'Interactive GPS Navigation & Sensors', de: 'Interaktive GPS-Navigation & Sensoren' },
+
+  // Study Places Types
+  'ქოვორქინგი': { en: 'Coworking', de: 'Co-Working' },
+  'კაფე': { en: 'Cafe', de: 'Café' },
+  'ბიბლიოთეკა': { en: 'Library', de: 'Bibliothek' },
+
+  // Study Places Header
+  'სწავლის სივრცეები': { en: 'Study Spaces', de: 'Lernbereiche' },
+  'თბილისის მყუდრო წერტილები': { en: 'Cozy Tbilisi Spots', de: 'Gemütliche Orte in Tiflis' },
+  'რუკის ხედი': { en: 'Map View', de: 'Kartenansicht' },
+
+  // Sensory Simulation Panel
+  'გარემო პირობების სიმულატორი': { en: 'Sensory Conditions Simulator', de: 'Umgebungssimulator' },
+  'ცოცხალი IoT': { en: 'Live IoT', de: 'Live-IoT' },
+  '⚙️ ავტო ლოგიკა': { en: '⚙️ Auto Logic', de: '⚙️ Auto-Logik' },
+  '🤫 Silent საათი': { en: '🤫 Silent Hour', de: '🤫 Silent-Stunde' },
+  '☕ ყავის რიგები': { en: '☕ Coffee Rush', de: '☕ Kaffee-Ansturm' },
+  'თქვენი ძიებით სივრცეები ვერ მოიძებნა.': { en: 'No study spaces found matching your search.', de: 'Keine Lernbereiche für Ihre Suche gefunden.' },
+
+  // Course Programs Header
+  'სასწავლო პროგრამები': { en: 'Study Programs', de: 'Studienprogramme' },
+  'აკადემიური კურიკულუმები შენი მიზნებისთვის': { en: 'Academic curricula for your study goals', de: 'Academic-Lehrpläne für Ihre Studienziele' },
+
+  // Course detail specifications
+  'სწავლის ფასი': { en: 'Course Tuition', de: 'Kursgebühr' },
+  'ერთჯერადი შენატანი': { en: 'One-time fee', de: 'Einmalige Gebühr' },
+  'ფორმატი': { en: 'Format', de: 'Format' },
+  'კვირეული შეხვედრები': { en: 'Weekly meetings', de: 'Wöchentliche Treffen' },
+  'ხანგრძლივობა': { en: 'Duration', de: 'Dauer' },
+  'აკადემიური დატვირთვა': { en: 'Academic workload', de: 'Akademische Arbeitsbelastung' },
+  'კურიკულუმის შესახებ': { en: 'About Curriculum', de: 'Über den Lehrplan' },
+  'ეტაპობრივი გეგმა': { en: 'Syllabus Plan', de: 'Lehrplan-Plan' },
+  'კორპორატიული საგრანტო ადგილი': { en: 'Corporate Grant Spot', de: 'Corporate-Stipendium' },
+  'დააფიქსირე შენი ელ-ფოსტა უფასო საგრანტო ადგილის მოსაპოვებლად და დასარეგისტრირებლად:': {
+    en: 'Enter your email address to secure a corporate grant spot and enroll for free:',
+    de: 'Geben Sie Ihre E-Mail-Adresse ein, um sich für einen kostenlosen Grant-Platz anzumelden:'
+  },
+  'რეგისტრაცია': { en: 'Register', de: 'Registrieren' },
+  'რეგისტრაცია წარმატებით დასრულდა': { en: 'Registration Completed successfully!', de: 'Registrierung erfolgreich abgeschlossen!' },
+  'სასწავლო ინსტრუქცია გაიგზავნა:': { en: 'Study instructions sent to:', de: 'Studienanweisungen gesendet an:' },
+
+  // opportunities
+  'გრანტები და სტიპენდიები': { en: 'Grants & Scholarships', de: 'Förderung & Stipendien' },
+  'ფინანსური მხარდაჭერა შენი მომავლის დასაფინანსებლად': { en: 'Financial support to enable your academic future', de: 'Finanzielle Unterstützung für Ihre akademische Zukunft' },
+  'განაცხადის გაგზავნა 🚀': { en: 'Submit Application 🚀', de: 'Bewerbung einreichen 🚀' },
+
+  // Course Details
+  'საფუძვლები და გარემოს გამართვა': { en: 'Foundations & Env Setup', de: 'Grundlagen & Umgebungseinrichtung' },
+  'პირველი 4 კვირა დაეთმობა ფუნდამენტურ კონცეპტებსა და საჭირო ხელსაწყოების ინსტალაცია-გაცნობას.': {
+    en: 'First 4 weeks will focus on fundamental concepts and introducing target tools.',
+    de: 'Die ersten 4 Wochen widmen sich grundlegenden Konzepten und der Einrichtung von Tools.'
+  },
+  'ინტენსიური პრაქტიკული სპრინტები': { en: 'Intensive Practical Sprints', de: 'Intensive Praxis-Sprints' },
+  'კვირა 5-8: პრაქტიკული დავალებები და რეალურ კეისებზე დაფუძნებული პროდუქტების აწყობა.': {
+    en: 'Weeks 5-8: Hands-on tasks and building interactive applications based on real cases.',
+    de: 'Wochen 5-8: Praktische Aufgaben und Erstellung von Apps auf Basis realer Fallstudien.'
+  },
+  'სადიპლომო პროექტის პრეზენტაცია': { en: 'Graduation Project Demo Day', de: 'Abschlussprojekt Demo-Tag' },
+  'საბოლოო ეტაპი: საკუთარი ნამუშევრის წარდგენა მოწვეული დამსაქმებლებისა და ინვესტორების წინაშე.': {
+    en: 'Final stage: Presenting your personal project to invited tech employers and investors.',
+    de: 'Letzte Phase: Präsentation des Abschlussprojekts vor Arbeitgebern und Investoren.'
+  },
+
+  // Interests list
+  'ტექნოლოგიები': { en: 'Technologies', de: 'Technologien' },
+  'ხელოვნური ინტელექტი': { en: 'Artificial Intelligence', de: 'Künstliche Intelligenz' },
+  'დიზაინი': { en: 'Design', de: 'Design' },
+  'ფინანსები': { en: 'Finance', de: 'Finanzen' },
+  'მედიცინა': { en: 'Medicine', de: 'Medizin' },
+  'ბიზნესი': { en: 'Business', de: 'Wirtschaft' },
+  'მეწარმეობა': { en: 'Entrepreneurship', de: 'Unternehmertum' },
+  'საინჟინრო საქმე': { en: 'Engineering', de: 'Ingenieurwesen' },
+  'უცხო ენები': { en: 'Foreign Languages', de: 'Fremdsprachen' },
+
+  // Map widgets
+  'რესეტი': { en: 'Reset', de: 'Zurücksetzen' },
+  'როუტი Geolab-ზე': { en: 'Route to Geolab', de: 'Wegbeschreibung zu Geolab' },
+  'რიყის პარკი': { en: 'Rike Park', de: 'Rike-Park' },
+  'ჭავჭავაძის გამზ.': { en: 'Chavchavadze Ave.', de: 'Tschawtschawadse-Allee' },
+  'საბურთალო': { en: 'Saburtalo district', de: 'Saburtalo-Viertel' },
+  'ძველი თბილისი': { en: 'Old Tbilisi', de: 'Alt-Tiflis' },
+  'ვაკის პარკი • Vake Park 🌳': { en: 'Vake Park 🌳', de: 'Wake-Park 🌳' },
+  'მთაწმინდის ტყე-პარკი': { en: 'Mtatsminda Forest Park', de: 'Bergpark Mtazminda' },
+  'სივრცის ცოცხალი მახასიათებლები': { en: 'Live Space Parameters', de: 'Live-Lernort-Eigenschaften' },
+
+  '📝 დეტალები': { en: '📝 Details', de: '📝 Details' },
+  '🪑 მაგიდები': { en: '🪑 Desks', de: '🪑 Tische' },
+  '📡 სენსორები': { en: '📡 Sensors', de: '📡 Sensoren' },
+  'სივრცის სრული გვერდი 🔎': { en: 'Full Space Page 🔎', de: 'Vollständige Seite 🔎' },
+  '🪑 მაგიდის/როზეტის შერჩევა:': { en: '🪑 Choose Desk/Socket:', de: '🪑 Steckdose/Tisch wählen:' },
+  'სწრაფი დაჯავშნა უფასოდ': { en: 'Free instant booking', de: 'Kostenlose Direktbuchung' },
+  '✓ დაჯავშნილი': { en: '✓ Booked', de: '✓ Reserviert' },
+  'Live ხმაურის ინდექსი:': {  en: 'Live Decibel Index:', de: 'Live-Lärmindex:' },
+  '🤫 სრული სიჩუმეა — იდეალურია რთული პროგრამირებისთვის': {
+    en: '🤫 Total silence — ideal for complex programming tasks',
+    de: '🤫 Absolute Stille — ideal für komplexe Programmieraufgaben'
+  },
+  '☕ ზომიერი ხმაურია — შესაფერისია მეგობრული აუდიენციისთვის': {
+    en: '☕ Moderate noise — suitable for collaborative sessions',
+    de: '☕ Mäßiger Lärm — geeignet für kooperative Sitzungen'
+  },
+  'სივრცე შეურჩიეზე': { en: 'Select a Spot', de: 'Lernort auswählen' },
+  'დააწკაპუნეთ რუკაზე სასურველ პინს დისტანციის საანგარიშოდ': {
+    en: 'Click any pin on the map to compute direction & distance',
+    de: 'Klicken Sie auf eine Stecknadel auf der Karte, um die Entfernung zu berechnen'
+  },
+
+  // Map Filter Tags
+  '🌐 ყველა სივრცე': { en: '🌐 All Spaces', de: '🌐 Alle Lernorte' },
+  '💼 მხოლოდ ქოვორქინგი': { en: '💼 Coworking Only', de: '💼 Nur Co-Working' },
+  '☕ კაფეები': { en: '☕ Cafes', de: '☕ Cafés' },
+  '🏛️ ბიბლიოთეკა': { en: '🏛️ Libraries', de: '🏛️ Bibliotheken' },
+  '🤫 ძალიან ჩუმი (≤30 dB)': { en: '🤫 Very Quiet (≤30 dB)', de: '🤫 Sehr leise (≤30 dB)' },
+
+  // Landmarks
+  'მთაწმინდის ანძა 🗼': { en: 'Mtatsminda TV Tower 🗼', de: 'Mtazminda-Fernsehturm 🗼' },
+  'მშვიდობის ხიდი 🌉': { en: 'Bridge of Peace 🌉', de: 'Friedensbrücke 🌉' },
+  'ეროვნული ბიბლიოთეკა 🏛️': { en: 'National Library 🏛️', de: 'Nationalbibliothek 🏛️' },
+  'Tbilisi TV Tower — მშვენიერი ხედი და მშვიდი აურა მთაწმინდაზე 🌲': {
+    en: 'Tbilisi TV Tower — scenic mountain view and peaceful atmosphere on Mtatsminda 🌲',
+    de: 'Fernsehturm Tiflis — herrlicher Bergblick und friedliche Atmosphäre auf dem Mtazminda 🌲'
+  },
+  'Bridge of Peace — დააკავშირებს ძველ თბილისს რიყის პარკთან 🌊': {
+    en: 'Bridge of Peace — connects Old Tbilisi history with modern Rike Park 🌊',
+    de: 'Friedensbrücke — verbindet die Altstadt von Tiflis mit dem Rike-Park 🌊'
+  },
+  'National Library — იდეალური აკადემიური სივრცე და კვლევის ცენტრი 📚': {
+    en: 'National Library — state-of-the-art academic workspace and heritage logs research 📚',
+    de: 'Nationalbibliothek — hochmoderne akademische Arbeitsbereiche und Kulturerbeforschung 📚'
+  },
+
+  // opportunity types
+  'ბოლო ვადა:': { en: 'Deadline:', de: 'Frist:' },
+
+  // course types
+  'ენები': { en: 'Languages', de: 'Sprachen' },
+  'გამოცდები': { en: 'Exams', de: 'Prüfungen' },
+  'სილაბუსი': { en: 'Syllabus', de: 'Lehrplan' },
+  'სილაბუსის სამუშაო დაფა': { en: 'Syllabus Dashboard', de: 'Lehrplan-Dashboard' },
+  'მოსახერხებელი': { en: 'Comfortable', de: 'Bequem' },
+  'ულტრა ჩუმი': { en: 'Ultra Quiet', de: 'Ultra ruhig' },
+  'სამუშაო ეკრანები': { en: 'Work Screens', de: 'Arbeitsbildschirme' },
+  'მიიღე EduNest VIP': { en: 'Get EduNest VIP', de: 'EduNest VIP holen' },
+  'მიიღე ექსკლუზიური ფასდაკლებები და გახსენი სრული AI ჩატბოტ ასისტენტი.': {
+    en: 'Get exclusive sales & unlock full AI chatbot assistant.',
+    de: 'Erhalten Sie exklusive Rabatte und schalten Sie den KI-Chatbot-Assistenten frei.'
+  }
+};
+
 interface PhoneMockupProps {
   currentScreen: ScreenType;
   selectedPlaceId?: string;
@@ -91,6 +318,15 @@ export default function PhoneMockup({
   // Active language and translations state
   const [activeLanguage, setActiveLanguage] = useState<'ka' | 'en' | 'de'>('ka');
   const t = useMemo(() => TRANSLATIONS[activeLanguage], [activeLanguage]);
+
+  const trans = (str: string) => {
+    if (activeLanguage === 'ka') return str;
+    const match = TEXT_TRANSLATIONS[str];
+    if (match) {
+      return activeLanguage === 'en' ? match.en : match.de;
+    }
+    return str;
+  };
 
   // AI Chatbot states
   const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'model', text: string }>>([]);
@@ -280,7 +516,7 @@ export default function PhoneMockup({
     setGpsLoading(true);
     setGpsError(null);
     if (!navigator.geolocation) {
-      setGpsError("GPS-ი მხარდაუჭერელია ბრაუზერის მიერ.");
+      setGpsError(activeLanguage === 'ka' ? "GPS-ი მხარდაუჭერელია ბრაუზერის მიერ." : activeLanguage === 'en' ? "GPS is not supported by your browser." : "GPS wird von Ihrem Browser nicht unterstützt.");
       setGpsLoading(false);
       return;
     }
@@ -295,7 +531,7 @@ export default function PhoneMockup({
       },
       (error) => {
         console.error("GPS Error, staying in Tbilisi central coordinates: ", error);
-        setGpsError("ბრაუზერმა დაბლოკა GPS. გამოყენებულია თბილისის ნაგულისხმევი ლოკაცია.");
+        setGpsError(activeLanguage === 'ka' ? "ბრაუზერმა დაბლოკა GPS. გამოყენებულია თბილისის ნაგულისხმევი ლოკაცია." : activeLanguage === 'en' ? "Browser blocked GPS access. Used default Tbilisi location." : "Browser hat den GPS-Zugriff blockiert. Standardstandort Tiflis verwendet.");
         setUserCoords({ lat: 41.7032, lng: 44.7975 }); // Geolab center
         setGpsLoading(false);
       },
@@ -324,7 +560,7 @@ export default function PhoneMockup({
         : 1.2;
       return {
         ...place,
-        distance: `${distanceKm} კმ`
+        distance: `${distanceKm} ${activeLanguage === 'ka' ? 'კმ' : 'km'}`
       };
     });
   }, [placesWithSensoryOverride, userCoords]);
@@ -907,7 +1143,7 @@ export default function PhoneMockup({
                 </div>
 
                 {/* AI assistant home promo card */}
-                <div className="rounded-2xl bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed] p-0.5 shadow-md">
+                <div className={`rounded-2xl p-0.5 shadow-md ${!registeredUser?.isPremium ? 'bg-gradient-to-tr from-amber-500 via-yellow-500 to-amber-600' : 'bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed]'}`}>
                   <div className="rounded-[14px] bg-slate-900 text-white p-4.5 space-y-3 relative overflow-hidden">
                     <div className="absolute top-[-20%] right-[-20%] w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
                     <div className="flex justify-between items-start">
@@ -917,17 +1153,44 @@ export default function PhoneMockup({
                         </div>
                         <h4 className="font-display text-[11px] font-black text-slate-100">{t.aiBannerTitle}</h4>
                       </div>
-                      <span className="rounded-full bg-slate-800 border border-slate-700 font-mono text-[7px] font-bold px-1.5 py-0.5 text-indigo-300">GEMINI POWERED</span>
+                      {!registeredUser?.isPremium ? (
+                        <span className="rounded-full bg-amber-500/20 border border-amber-500/40 font-mono text-[7px] font-bold px-1.5 py-0.5 text-amber-400 flex items-center gap-0.5 shadow-xs">
+                          <Lock className="w-2 h-2 text-amber-400" /> PREMIUM
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-slate-800 border border-slate-700 font-mono text-[7px] font-bold px-1.5 py-0.5 text-indigo-300">GEMINI POWERED</span>
+                      )}
                     </div>
                     <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
                       {t.aiBannerDesc}
                     </p>
                     <button
-                      onClick={() => setChatbotOpen(true)}
-                      className="w-full py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 active:scale-98 text-white font-bold text-[10px] shadow-sm transition cursor-pointer flex items-center justify-center gap-1"
+                      onClick={() => {
+                        if (!registeredUser?.isPremium) {
+                          setPremiumPromoReason(activeLanguage === 'ka' ? 'რათა გახსნათ AI ჩატბოტ ასისტენტი 🤖' : activeLanguage === 'en' ? 'to unlock AI Chatbot Assistant 🤖' : 'um den KI-Chatbot-Assistenten freizuschalten 🤖');
+                          setPremiumModalOpen(true);
+                          setPaymentStep('benefits');
+                        } else {
+                          setChatbotOpen(true);
+                        }
+                      }}
+                      className={`w-full py-2 rounded-xl text-white font-bold text-[10px] shadow-sm transition cursor-pointer flex items-center justify-center gap-1 active:scale-98 ${
+                        !registeredUser?.isPremium 
+                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110' 
+                          : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500'
+                      }`}
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
-                      {t.aiBannerBtn}
+                      {!registeredUser?.isPremium ? (
+                        <>
+                          <Lock className="w-3.5 h-3.5 text-white" />
+                          <span>{activeLanguage === 'ka' ? 'ჩატბოტის გახსნა (Premium)' : activeLanguage === 'en' ? 'Unlock AI Chatbot (Premium)' : 'KI-Chatbot freischalten (Premium)'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
+                          {t.aiBannerBtn}
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -996,7 +1259,7 @@ export default function PhoneMockup({
                         onClick={() => setSensoryPreset(preset.key as any)}
                         className={`text-[9.5px] px-2 py-1 rounded-lg border flex-1 font-bold ${sensoryPreset === preset.key ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 text-slate-600'}`}
                       >
-                        {preset.label}
+                        {trans(preset.label)}
                       </button>
                     ))}
                   </div>
@@ -1007,7 +1270,7 @@ export default function PhoneMockup({
                   {filteredPlaces.length === 0 ? (
                     <div className="p-8 text-center text-slate-400 text-xs">
                       <AlertCircle className="w-8 h-8 mx-auto text-slate-350 mb-2" />
-                      თქვენი ძიებით სივრცეები ვერ მოიძებნა.
+                      {trans('თქვენი ძიებით სივრცეები ვერ მოიძებნა.')}
                     </div>
                   ) : (
                     filteredPlaces.map((place) => (
@@ -1050,7 +1313,7 @@ export default function PhoneMockup({
                           <div className="flex justify-between items-center text-[9.5px] border-t border-slate-50 pt-2.5 mt-1 font-semibold text-slate-600">
                             <span className="flex items-center gap-1 text-indigo-700">
                               <Compass className="w-3.5 h-3.5 text-slate-400" />
-                              მანძილი: <strong>{place.distance}</strong>
+                              {t.distance}: <strong>{place.distance}</strong>
                             </span>
                             
                             <span className={`px-2 py-0.5 rounded-full border text-[8.5px] ${getNoiseLabel(place.noiseLevel).color}`}>
@@ -1078,8 +1341,8 @@ export default function PhoneMockup({
                 <div className="p-4 bg-white border-b border-slate-100 shrink-0 shadow-3xs">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h2 className="font-display text-md font-black text-slate-900 leading-none">ცოცხალი საორიენტაციო რუკა</h2>
-                      <p className="text-[9.5px] text-slate-400 font-medium mt-1">ინტერაქტიული GPS ნავიგაცია და სენსორები</p>
+                      <h2 className="font-display text-md font-black text-slate-900 leading-none">{trans('ცოცხალი საორიენტაციო რუკა')}</h2>
+                      <p className="text-[9.5px] text-slate-400 font-medium mt-1">{trans('ინტერაქტიული GPS ნავიგაცია და სენსორები')}</p>
                     </div>
                     
                     <button
@@ -1092,18 +1355,18 @@ export default function PhoneMockup({
                       ) : (
                         <Navigation className="w-3 h-3 text-teal-600 animate-pulse" />
                       )}
-                      GPS-ლოკატორი
+                      {activeLanguage === 'ka' ? 'GPS-ლოკატორი' : activeLanguage === 'en' ? 'GPS Locator' : 'GPS-Ortung'}
                     </button>
                   </div>
 
                   {/* Enhanced Horizontal Map Filter Category Chips */}
                   <div className="flex gap-1.5 mt-3 overflow-x-auto no-scrollbar pb-1 select-none">
                     {[
-                      { id: 'all', label: '🌐 ყველა სივრცე' },
-                      { id: 'coworking', label: '💼 მხოლოდ ქოვორქინგი' },
-                      { id: 'cafe', label: '☕ კაფეები' },
-                      { id: 'library', label: '🏛️ ბიბლიოთეკა' },
-                      { id: 'quiet', label: '🤫 ძალიან ჩუმი (≤30 dB)' }
+                      { id: 'all', label: trans('🌐 ყველა სივრცე') },
+                      { id: 'coworking', label: trans('💼 მხოლოდ ქოვორქინგი') },
+                      { id: 'cafe', label: trans('☕ კაფეები') },
+                      { id: 'library', label: trans('🏛️ ბიბლიოთეკა') },
+                      { id: 'quiet', label: trans('🤫 ძალიან ჩუმი (≤30 dB)') }
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -2177,7 +2440,7 @@ export default function PhoneMockup({
                 className={`flex flex-col items-center justify-center p-1.5 px-2 rounded-xl transition cursor-pointer flex-1 ${currentScreen === 'home' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-400 hover:text-slate-800'}`}
               >
                 <Home className="w-4.5 h-4.5 shrink-0" />
-                <span className="text-[8.5px] font-bold font-sans mt-0.5">მთავარი</span>
+                <span className="text-[8.5px] font-bold font-sans mt-0.5">{t.tabHome}</span>
               </button>
 
               {/* Item 2: Spaces */}
@@ -2186,7 +2449,7 @@ export default function PhoneMockup({
                 className={`flex flex-col items-center justify-center p-1.5 px-2 rounded-xl transition cursor-pointer flex-1 ${currentScreen === 'places' || currentScreen === 'place-detail' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-400 hover:text-slate-800'}`}
               >
                 <MapPin className="w-4.5 h-4.5 shrink-0" />
-                <span className="text-[8.5px] font-bold font-sans mt-0.5">სივრცეები</span>
+                <span className="text-[8.5px] font-bold font-sans mt-0.5">{t.tabSpaces}</span>
               </button>
 
               {/* Item 3: Vector Map */}
@@ -2195,7 +2458,7 @@ export default function PhoneMockup({
                 className={`flex flex-col items-center justify-center p-1.5 px-2 rounded-xl transition cursor-pointer flex-1 ${currentScreen === 'map' ? 'text-teal-600 bg-teal-50/50' : 'text-slate-400 hover:text-slate-800'}`}
               >
                 <Compass className="w-4.5 h-4.5 shrink-0 animate-spin" style={{ animationDuration: currentScreen === 'map' ? '5s' : '0s' }} />
-                <span className="text-[8.5px] font-bold font-sans mt-0.5">რუკა GPA</span>
+                <span className="text-[8.5px] font-bold font-sans mt-0.5">{t.tabMap}</span>
               </button>
 
               {/* Item 4: Classes */}
@@ -2204,7 +2467,7 @@ export default function PhoneMockup({
                 className={`flex flex-col items-center justify-center p-1.5 px-2 rounded-xl transition cursor-pointer flex-1 ${currentScreen === 'programs' || currentScreen === 'program-detail' ? 'text-purple-600 bg-purple-50/50' : 'text-slate-400 hover:text-slate-800'}`}
               >
                 <BookOpen className="w-4.5 h-4.5 shrink-0" />
-                <span className="text-[8.5px] font-bold font-sans mt-0.5">კურსები</span>
+                <span className="text-[8.5px] font-bold font-sans mt-0.5">{t.tabCourses}</span>
               </button>
 
               {/* Item 5: Grants */}
@@ -2213,7 +2476,7 @@ export default function PhoneMockup({
                 className={`flex flex-col items-center justify-center p-1.5 px-2 rounded-xl transition cursor-pointer flex-1 ${currentScreen === 'opportunities' ? 'text-rose-600 bg-rose-50/50' : 'text-slate-400 hover:text-slate-800'}`}
               >
                 <GraduationCap className="w-4.5 h-4.5 shrink-0" />
-                <span className="text-[8.5px] font-bold font-sans mt-0.5">გრანტები</span>
+                <span className="text-[8.5px] font-bold font-sans mt-0.5">{t.tabGrants}</span>
               </button>
 
             </div>
@@ -2254,110 +2517,158 @@ export default function PhoneMockup({
                 </button>
               </div>
 
-              {/* Chat Message Box */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar bg-slate-950">
-                {chatMessages.map((msg, idx) => (
-                  <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    {msg.role === 'model' && (
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed] flex items-center justify-center shadow-md font-sans text-xs shrink-0 self-end">
-                        💡
-                      </div>
-                    )}
-                    <div className={`max-w-[78%] rounded-2xl p-3 text-[10.5px] leading-relaxed shadow-sm ${
-                      msg.role === 'user' 
-                        ? 'bg-gradient-to-tr from-[#2563eb] to-[#7c3aed] text-white rounded-br-xs' 
-                        : 'bg-slate-800 text-slate-100 rounded-bl-xs border border-slate-700/50'
-                    }`}>
-                      {msg.text}
-                    </div>
-                    {msg.role === 'user' && (
-                      <div className="w-7 h-7 rounded-full text-white font-black text-[9px] flex items-center justify-center shrink-0 self-end leading-none bg-indigo-600 border border-indigo-500 shadow-sm">
-                        {registeredUser?.name ? registeredUser.name.charAt(0).toUpperCase() : 'U'}
-                      </div>
-                    )}
-                  </div>
-                ))}
-                
-                {chatLoading && (
-                  <div className="flex gap-2 justify-start">
-                    <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center animate-spin shrink-0">
-                      <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
-                    </div>
-                    <div className="bg-slate-800 text-slate-400 border border-slate-700/50 rounded-2xl rounded-bl-xs p-3 text-[10.5px] flex items-center gap-1.5 shadow-sm">
-                      <span className="font-bold">{t.aiThinking}...</span>
+              {/* Chat Content conditionally depends on premium status */}
+              {!registeredUser?.isPremium ? (
+                <div className="flex-1 bg-slate-950 flex flex-col items-center justify-center p-6 text-center space-y-5 animate-fadeIn">
+                  <div className="w-16 h-16 rounded-full bg-slate-900 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-lg relative animate-pulse">
+                    <Crown className="w-7 h-7 text-amber-400 fill-amber-400 animate-bounce" />
+                    <div className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-red-500 border-2 border-slate-900 flex items-center justify-center">
+                      <Lock className="w-2 h-2 text-white" />
                     </div>
                   </div>
-                )}
-                
-                <div id="chat-bottom-anchor" />
-              </div>
+                  
+                  <div className="space-y-2 max-w-[85%]">
+                    <h4 className="font-display text-xs font-black text-amber-400 uppercase tracking-widest leading-none">
+                      {activeLanguage === 'ka' ? '🔒 AI ჩატბოტი დაბლოკილია' : activeLanguage === 'en' ? '🔒 AI Chatbot Locked' : '🔒 KI-Chatbot gesperrt'}
+                    </h4>
+                    <p className="text-[10px] text-slate-300 leading-relaxed font-sans mt-1">
+                      {activeLanguage === 'ka' 
+                        ? 'მოიპოვე სრული წვდომა ჭკვიან AI ასისტენტთან, რომელიც დაგეხმარება სწავლის სივრცეების შერჩევაში, IT კურიკულუმებისა და საგრანტო შესაძლებლობების პოვნაში.' 
+                        : activeLanguage === 'en' 
+                          ? 'Unlock full access to our intelligent AI helper to pick the absolute best study spaces, decode IT curricula, and map scholastic grants.' 
+                          : 'Holen Sie sich vollen Zugriff auf den intelligenten KI-Berater für Lernbereiche und Studienprogramme.'}
+                    </p>
+                  </div>
 
-              {/* Suggestions Quick Buttons */}
-              <div className="px-3 py-2 bg-slate-900 border-t border-slate-800 flex gap-1.5 overflow-x-auto no-scrollbar shrink-0">
-                {[
-                  {
-                    ka: "🔍 მირჩიე ქოვორქინგი",
-                    en: "🔍 Coworking recommendation",
-                    de: "🔍 Co-Working empfehlen",
-                    prompt: activeLanguage === 'ka' 
-                      ? "მითხარი, რომელია საუკეთესო მშვიდი ქოვორქინგი თბილისში?" 
-                      : activeLanguage === 'en' 
-                        ? "What are the best places in Tbilisi with good power outlets and ultra-fast Wi-Fi?" 
-                        : "Welche sind die besten Co-Working-Plätze in Tiflis?"
-                  },
-                  {
-                    ka: "💻 საუკეთესო IT კურსები",
-                    en: "💻 Best IT courses",
-                    de: "💻 Beste IT-Kurse",
-                    prompt: activeLanguage === 'ka' 
-                      ? "რა ტიპის IT კურსებს ან აკადემიებს მირჩევდი სწავლისთვის?" 
-                      : activeLanguage === 'en' 
-                        ? "Can you recommend the top tech courses available on EduNest?" 
-                        : "Können Sie mir IT-Kurse auf Deutsch empfehlen?"
-                  },
-                  {
-                    ka: "🎓 სასტიპენდიო გრანტები",
-                    en: "🎓 Grants & Loans",
-                    de: "🎓 Bildungsstipendien",
-                    prompt: activeLanguage === 'ka' 
-                      ? "როგორ შემიძლია მოვიპოვო დაფინანსება ან გრანტები?" 
-                      : activeLanguage === 'en' 
-                        ? "What is the scholarship process and how should I apply?" 
-                        : "Welche Stipendien sind derzeit verfügbar?"
-                  }
-                ].map((s, idx) => (
+                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-left w-full space-y-2">
+                    <span className="font-mono text-[8px] uppercase tracking-wider text-amber-550 font-black block">{activeLanguage === 'ka' ? 'პრემიუმ წევრობის უპირატესობა' : 'PREMIUM PRIVILEGE'}</span>
+                    <ul className="text-[9px] text-slate-400 space-y-1.5 list-disc pl-4 font-medium leading-relaxed">
+                      <li>{activeLanguage === 'ka' ? 'შეუზღუდავი AI კონსულტაციები და რეკომენდაციები' : 'Unlimited AI diagnostics and consultations'}</li>
+                      <li>{activeLanguage === 'ka' ? 'ინტეგრირებული Gemini-ს უახლესი მოდელი' : 'Powered by modern Google Gemini API'}</li>
+                      <li>{activeLanguage === 'ka' ? 'ექსკლუზიური ფასდაკლებები ქოვორქინგ სივრცეებზე' : 'Access premium coworking pricing deals'}</li>
+                    </ul>
+                  </div>
+
                   <button
-                    key={idx}
                     onClick={() => {
-                      setChatInput(s.prompt);
+                      setPremiumPromoReason(activeLanguage === 'ka' ? 'რათა გახსნათ AI ჩატბოტ ასისტენტი 🤖' : activeLanguage === 'en' ? 'to unlock AI Chatbot Assistant 🤖' : 'um den KI-Chatbot-Assistenten freizuschalten 🤖');
+                      setPremiumModalOpen(true);
+                      setPaymentStep('benefits');
                     }}
-                    className="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-[9px] font-bold text-slate-300 border border-slate-700 whitespace-nowrap cursor-pointer transition shrink-0"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:brightness-105 active:scale-98 text-slate-950 font-black text-[11px] transition shadow-lg flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    {activeLanguage === 'ka' ? s.ka : activeLanguage === 'en' ? s.en : s.de}
+                    <Crown className="w-4 h-4 text-slate-950 fill-slate-950" />
+                    <span>{activeLanguage === 'ka' ? 'გახდი პრემიუმი და გახსენი' : activeLanguage === 'en' ? 'Get Premium & Unlock Now' : 'Premium holen & freischalten'}</span>
                   </button>
-                ))}
-              </div>
+                </div>
+              ) : (
+                <>
+                  {/* Chat Message Box */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar bg-slate-950">
+                    {chatMessages.map((msg, idx) => (
+                      <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        {msg.role === 'model' && (
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed] flex items-center justify-center shadow-md font-sans text-xs shrink-0 self-end">
+                            💡
+                          </div>
+                        )}
+                        <div className={`max-w-[78%] rounded-2xl p-3 text-[10.5px] leading-relaxed shadow-sm ${
+                          msg.role === 'user' 
+                            ? 'bg-gradient-to-tr from-[#2563eb] to-[#7c3aed] text-white rounded-br-xs' 
+                            : 'bg-slate-800 text-slate-100 rounded-bl-xs border border-slate-700/50'
+                        }`}>
+                          {msg.text}
+                        </div>
+                        {msg.role === 'user' && (
+                          <div className="w-7 h-7 rounded-full text-white font-black text-[9px] flex items-center justify-center shrink-0 self-end leading-none bg-indigo-600 border border-indigo-500 shadow-sm">
+                            {registeredUser?.name ? registeredUser.name.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {chatLoading && (
+                      <div className="flex gap-2 justify-start">
+                        <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center animate-spin shrink-0">
+                          <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+                        </div>
+                        <div className="bg-slate-800 text-slate-400 border border-slate-700/50 rounded-2xl rounded-bl-xs p-3 text-[10.5px] flex items-center gap-1.5 shadow-sm">
+                          <span className="font-bold">{t.aiThinking}...</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div id="chat-bottom-anchor" />
+                  </div>
 
-              {/* Chat typing block */}
-              <div className="p-3 bg-slate-850 border-t border-slate-700 flex gap-2 items-center shrink-0">
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSendChatMessage();
-                  }}
-                  placeholder={t.aiPlaceholder}
-                  className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-[11px] font-sans text-white focus:border-indigo-500 outline-none placeholder-slate-500"
-                />
-                <button
-                  onClick={handleSendChatMessage}
-                  disabled={chatLoading}
-                  className="w-8.5 h-8.5 rounded-xl bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed] hover:opacity-95 text-white flex items-center justify-center shadow-md cursor-pointer disabled:opacity-50 transition shrink-0"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
+                  {/* Suggestions Quick Buttons */}
+                  <div className="px-3 py-2 bg-slate-900 border-t border-slate-800 flex gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+                    {[
+                      {
+                        ka: "🔍 მირჩიე ქოვორქინგი",
+                        en: "🔍 Coworking recommendation",
+                        de: "🔍 Co-Working empfehlen",
+                        prompt: activeLanguage === 'ka' 
+                          ? "მითხარი, რომელია საუკეთესო მშვიდი ქოვორქინგი თბილისში?" 
+                          : activeLanguage === 'en' 
+                            ? "What are the best places in Tbilisi with good power outlets and ultra-fast Wi-Fi?" 
+                            : "Welche sind die besten Co-Working-Plätze in Tiflis?"
+                      },
+                      {
+                        ka: "💻 საუკეთესო IT კურსები",
+                        en: "💻 Best IT courses",
+                        de: "💻 Beste IT-Kurse",
+                        prompt: activeLanguage === 'ka' 
+                          ? "რა ტიპის IT კურსებს ან აკადემიებს მირჩევდი სწავლისთვის?" 
+                          : activeLanguage === 'en' 
+                            ? "Can you recommend the top tech courses available on EduNest?" 
+                            : "Können Sie mir IT-Kurse auf Deutsch empfehlen?"
+                      },
+                      {
+                        ka: "🎓 სასტიპენდიო გრანტები",
+                        en: "🎓 Grants & Loans",
+                        de: "🎓 Bildungsstipendien",
+                        prompt: activeLanguage === 'ka' 
+                          ? "როგორ შემიძლია მოვიპოვო დაფინანსება ან გრანტები?" 
+                          : activeLanguage === 'en' 
+                            ? "What is the scholarship process and how should I apply?" 
+                            : "Welche Stipendien sind derzeit verfügbar?"
+                      }
+                    ].map((s, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setChatInput(s.prompt);
+                        }}
+                        className="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-[9px] font-bold text-slate-300 border border-slate-700 whitespace-nowrap cursor-pointer transition shrink-0"
+                      >
+                        {activeLanguage === 'ka' ? s.ka : activeLanguage === 'en' ? s.en : s.de}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Chat typing block */}
+                  <div className="p-3 bg-slate-850 border-t border-slate-700 flex gap-2 items-center shrink-0">
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSendChatMessage();
+                      }}
+                      placeholder={t.aiPlaceholder}
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-[11px] font-sans text-white focus:border-indigo-500 outline-none placeholder-slate-500"
+                    />
+                    <button
+                      onClick={handleSendChatMessage}
+                      disabled={chatLoading}
+                      className="w-8.5 h-8.5 rounded-xl bg-gradient-to-tr from-[#06b6d4] to-[#7c3aed] hover:opacity-95 text-white flex items-center justify-center shadow-md cursor-pointer disabled:opacity-50 transition shrink-0"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                </>
+              )}
             </motion.div>
           </div>
         )}
